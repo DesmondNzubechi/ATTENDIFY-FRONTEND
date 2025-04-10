@@ -1,26 +1,99 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { StudentDetails } from '@/components/dashboard/StudentDetails';
+import { AddStudentDialog } from '@/components/dashboard/AddStudentDialog';
+import { SuccessDialog } from '@/components/dashboard/SuccessDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Users, UserPlus, BookOpen, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+
+type Student = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+  registrationNumber: string;
+  email: string;
+  course: string;
+};
 
 export default function Overview() {
+  const [students, setStudents] = useState<Student[]>([
+    {
+      id: '1',
+      firstName: 'Elizabeth',
+      lastName: 'Alan',
+      avatar: '/placeholder.svg',
+      registrationNumber: 'P7345H3234',
+      email: 'elizabeth@gmail.com',
+      course: 'Medicine & Surgery'
+    },
+    {
+      id: '2',
+      firstName: 'Desmond',
+      lastName: 'Nyeko',
+      avatar: '/placeholder.svg',
+      registrationNumber: 'P7346H3234',
+      email: 'desmond@gmail.com',
+      course: 'Law'
+    },
+    {
+      id: '3',
+      firstName: 'Cedar',
+      lastName: 'James',
+      avatar: '/placeholder.svg',
+      registrationNumber: 'P7346H3224',
+      email: 'cedar@gmail.com',
+      course: 'Engineering'
+    }
+  ]);
+  
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleAddStudent = (newStudent: any) => {
+    const studentWithId = {
+      ...newStudent,
+      id: `${students.length + 1}`,
+      avatar: '/placeholder.svg',
+      firstName: newStudent.firstName,
+      lastName: newStudent.lastName,
+    };
+    
+    setStudents([...students, studentWithId]);
+    setIsSuccessDialogOpen(true);
+  };
+
+  const handleDeleteStudent = (studentId: string) => {
+    setStudents(students.filter(student => student.id !== studentId));
+    toast({
+      title: "Student Removed",
+      description: "The student has been removed from the system."
+    });
+  };
+
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Overview</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700">+ Add new student</Button>
+        <Button 
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => setIsAddStudentOpen(true)}
+        >
+          + Add new student
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard 
           icon={<Users size={24} />} 
           title="All Students" 
-          value="535,214" 
+          value={students.length.toLocaleString()} 
           change={{ value: "2.5%", type: "increase" }}
           color="blue"
         />
@@ -55,8 +128,23 @@ export default function Overview() {
       </div>
       
       <div className="mb-6">
-        <StudentDetails />
+        <StudentDetails 
+          students={students}
+          onDeleteStudent={handleDeleteStudent}
+        />
       </div>
+
+      <AddStudentDialog 
+        open={isAddStudentOpen}
+        onOpenChange={setIsAddStudentOpen}
+        onStudentAdded={handleAddStudent}
+      />
+
+      <SuccessDialog 
+        open={isSuccessDialogOpen}
+        onClose={() => setIsSuccessDialogOpen(false)}
+        message="Student Added Successfully!"
+      />
     </DashboardLayout>
   );
 }

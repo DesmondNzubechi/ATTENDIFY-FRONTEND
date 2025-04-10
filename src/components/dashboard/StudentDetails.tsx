@@ -1,22 +1,32 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Eye, Trash2 } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Student = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   avatar?: string;
   registrationNumber: string;
   email: string;
   course: string;
 };
 
-const students: Student[] = [
+const defaultStudents: Student[] = [
   {
     id: '1',
-    name: 'Elizabeth Alan',
+    firstName: 'Elizabeth',
+    lastName: 'Alan',
     avatar: '/placeholder.svg',
     registrationNumber: 'P7345H3234',
     email: 'elizabeth@gmail.com',
@@ -24,7 +34,8 @@ const students: Student[] = [
   },
   {
     id: '2',
-    name: 'Desmond Nyeko',
+    firstName: 'Desmond',
+    lastName: 'Nyeko',
     avatar: '/placeholder.svg',
     registrationNumber: 'P7346H3234',
     email: 'desmond@gmail.com',
@@ -32,7 +43,8 @@ const students: Student[] = [
   },
   {
     id: '3',
-    name: 'Cedar James',
+    firstName: 'Cedar',
+    lastName: 'James',
     avatar: '/placeholder.svg',
     registrationNumber: 'P7346H3224',
     email: 'cedar@gmail.com',
@@ -40,7 +52,34 @@ const students: Student[] = [
   }
 ];
 
-export function StudentDetails() {
+interface StudentDetailsProps {
+  students?: Student[];
+  onViewStudent?: (student: Student) => void;
+  onDeleteStudent?: (studentId: string) => void;
+}
+
+export function StudentDetails({ 
+  students = defaultStudents,
+  onViewStudent,
+  onDeleteStudent
+}: StudentDetailsProps) {
+  
+  const handleView = (student: Student) => {
+    if (onViewStudent) {
+      onViewStudent(student);
+    } else {
+      console.log('View student:', student);
+    }
+  };
+
+  const handleDelete = (studentId: string) => {
+    if (onDeleteStudent) {
+      onDeleteStudent(studentId);
+    } else {
+      console.log('Delete student ID:', studentId);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -49,48 +88,54 @@ export function StudentDetails() {
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left border-b border-gray-200">
-                <th className="pb-3 font-medium text-gray-500">Name</th>
-                <th className="pb-3 font-medium text-gray-500">Registration Number</th>
-                <th className="pb-3 font-medium text-gray-500">Email</th>
-                <th className="pb-3 font-medium text-gray-500">Course Enrolled</th>
-                <th className="pb-3 font-medium text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Registration Number</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Course Enrolled</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {students.map((student) => (
-                <tr key={student.id} className="border-b border-gray-100">
-                  <td className="py-3">
+                <TableRow key={student.id}>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
                         <img 
                           src={student.avatar} 
-                          alt={student.name} 
+                          alt={`${student.firstName} ${student.lastName}`} 
                           className="object-cover"
                         />
                       </Avatar>
-                      <span>{student.name}</span>
+                      <span>{student.firstName} {student.lastName}</span>
                     </div>
-                  </td>
-                  <td className="py-3">{student.registrationNumber}</td>
-                  <td className="py-3">{student.email}</td>
-                  <td className="py-3">{student.course}</td>
-                  <td className="py-3">
+                  </TableCell>
+                  <TableCell>{student.registrationNumber}</TableCell>
+                  <TableCell>{student.email}</TableCell>
+                  <TableCell>{student.course}</TableCell>
+                  <TableCell>
                     <div className="flex space-x-2">
-                      <button className="text-yellow-500 hover:text-yellow-600">
+                      <button 
+                        className="text-yellow-500 hover:text-yellow-600"
+                        onClick={() => handleView(student)}
+                      >
                         <Eye size={16} />
                       </button>
-                      <button className="text-red-500 hover:text-red-600">
+                      <button 
+                        className="text-red-500 hover:text-red-600"
+                        onClick={() => handleDelete(student.id)}
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
