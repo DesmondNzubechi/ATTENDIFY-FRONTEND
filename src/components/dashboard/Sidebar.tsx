@@ -3,15 +3,38 @@ import React, { useState } from 'react';
 import { BarChart, Users, GraduationCap, Calendar, BookOpen, Library, PieChart, Settings, HelpCircle, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Link, useLocation } from 'react-router-dom';
 
 type SidebarItemProps = {
   icon: React.ElementType;
   label: string;
   active?: boolean;
+  to?: string;
   onClick?: () => void;
 };
 
-const SidebarItem = ({ icon: Icon, label, active, onClick }: SidebarItemProps) => {
+const SidebarItem = ({ icon: Icon, label, active, to, onClick }: SidebarItemProps) => {
+  const Content = () => (
+    <>
+      <Icon size={20} />
+      <span>{label}</span>
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className={cn(
+          "sidebar-item w-full text-left",
+          active && "sidebar-item-active"
+        )}
+      >
+        <Content />
+      </Link>
+    );
+  }
+
   return (
     <button
       onClick={onClick}
@@ -20,8 +43,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: SidebarItemProps) =
         active && "sidebar-item-active"
       )}
     >
-      <Icon size={20} />
-      <span>{label}</span>
+      <Content />
     </button>
   );
 };
@@ -29,6 +51,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: SidebarItemProps) =
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
+  const location = useLocation();
   
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -59,8 +82,18 @@ export function Sidebar() {
         </div>
         
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          <SidebarItem icon={BarChart} label="Overview" active />
-          <SidebarItem icon={Users} label="Lecturer" />
+          <SidebarItem 
+            icon={BarChart} 
+            label="Overview" 
+            active={location.pathname === '/'} 
+            to="/"
+          />
+          <SidebarItem 
+            icon={Users} 
+            label="Lecturer" 
+            active={location.pathname === '/lecturers'} 
+            to="/lecturers"
+          />
           <SidebarItem icon={GraduationCap} label="Student" />
           <SidebarItem icon={Calendar} label="Attendance" />
           <SidebarItem icon={BookOpen} label="Course" />
