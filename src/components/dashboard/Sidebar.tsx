@@ -100,10 +100,30 @@ export function Sidebar() {
             active={location.pathname === '/students'} 
             to="/students"
           />
-          <SidebarItem icon={Calendar} label="Attendance" />
-          <SidebarItem icon={BookOpen} label="Course" />
-          <SidebarItem icon={Library} label="Academic Session" />
-          <SidebarItem icon={PieChart} label="Performance" />
+          <SidebarItem 
+            icon={Calendar} 
+            label="Attendance" 
+            active={location.pathname === '/attendance'} 
+            to="/attendance"
+          />
+          <SidebarItem 
+            icon={BookOpen} 
+            label="Course" 
+            active={location.pathname === '/courses'} 
+            to="/courses"
+          />
+          <SidebarItem 
+            icon={Library} 
+            label="Academic Session" 
+            active={location.pathname === '/academic-sessions'} 
+            to="/academic-sessions"
+          />
+          <SidebarItem 
+            icon={PieChart} 
+            label="Performance" 
+            active={location.pathname === '/performance'} 
+            to="/performance"
+          />
         </nav>
         
         <div className="p-3 border-t border-sidebar-border space-y-1">

@@ -1,0 +1,215 @@
+
+import React, { useState } from 'react';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search, Filter, Download, BarChart as BarChartIcon, LineChart as LineChartIcon } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// Sample data for attendance charts
+const attendanceData = [
+  { name: 'CSC101', present: 85, absent: 15 },
+  { name: 'CSC201', present: 78, absent: 22 },
+  { name: 'MTH301', present: 65, absent: 35 },
+  { name: 'PHY101', present: 90, absent: 10 },
+  { name: 'CHM202', present: 72, absent: 28 },
+];
+
+const studentAttendanceData = [
+  { name: 'Week 1', attendance: 90 },
+  { name: 'Week 2', attendance: 85 },
+  { name: 'Week 3', attendance: 92 },
+  { name: 'Week 4', attendance: 78 },
+  { name: 'Week 5', attendance: 88 },
+  { name: 'Week 6', attendance: 95 },
+];
+
+const overallAttendance = [
+  { name: 'Present', value: 82 },
+  { name: 'Absent', value: 18 },
+];
+
+const COLORS = ['#0088FE', '#FF8042'];
+
+export default function Performance() {
+  const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
+  const [filterOption, setFilterOption] = useState('course');
+  const { toast } = useToast();
+
+  const handleExport = () => {
+    toast({
+      title: "Export Started",
+      description: "Your performance data is being exported.",
+    });
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Performance</h1>
+        <div className="flex gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search"
+              className="pl-8 w-[200px]"
+            />
+          </div>
+          <Button variant="outline" className="gap-2">
+            <Filter size={16} />
+            Filter
+          </Button>
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            onClick={handleExport}
+          >
+            <Download size={16} />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      {/* Chart controls */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex gap-2">
+          <Button 
+            variant={chartType === 'bar' ? 'default' : 'outline'} 
+            onClick={() => setChartType('bar')}
+            className="gap-2"
+          >
+            <BarChartIcon size={16} />
+            Bar Chart
+          </Button>
+          <Button 
+            variant={chartType === 'line' ? 'default' : 'outline'} 
+            onClick={() => setChartType('line')}
+            className="gap-2"
+          >
+            <LineChartIcon size={16} />
+            Line Chart
+          </Button>
+        </div>
+        
+        <div className="w-[200px]">
+          <Select onValueChange={setFilterOption} defaultValue={filterOption}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="student">Individual Student</SelectItem>
+              <SelectItem value="course">Course</SelectItem>
+              <SelectItem value="level">Level</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Main chart */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Attendance by Course</CardTitle>
+          </CardHeader>
+          <CardContent className="min-h-[400px]">
+            <ResponsiveContainer width="100%" height={400}>
+              {chartType === 'bar' ? (
+                <BarChart
+                  data={attendanceData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="present" fill="#8884d8" name="Present %" />
+                  <Bar dataKey="absent" fill="#ff7373" name="Absent %" />
+                </BarChart>
+              ) : (
+                <LineChart
+                  data={studentAttendanceData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="attendance" stroke="#8884d8" name="Attendance %" activeDot={{ r: 8 }} />
+                </LineChart>
+              )}
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Attendance percentage card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Overall Attendance</CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center items-center">
+            <div className="w-64 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={overallAttendance}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {overallAttendance.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Attendance trends card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Attendance Trends</CardTitle>
+          </CardHeader>
+          <CardContent className="min-h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={studentAttendanceData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="attendance" stroke="#82ca9d" name="Attendance %" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
