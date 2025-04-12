@@ -22,6 +22,7 @@ import {
   Cell
 } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
 
 // Sample data for attendance charts
 const attendanceData = [
@@ -51,7 +52,30 @@ const COLORS = ['#0088FE', '#FF8042'];
 export default function Performance() {
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [filterOption, setFilterOption] = useState('course');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { toast } = useToast();
+
+  // Filter options
+  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
+    { id: 'level-100', label: 'Level 100', checked: false, group: 'Level' },
+    { id: 'level-200', label: 'Level 200', checked: false, group: 'Level' },
+    { id: 'level-300', label: 'Level 300', checked: false, group: 'Level' },
+    { id: 'level-400', label: 'Level 400', checked: false, group: 'Level' },
+    { id: 'course-csc101', label: 'CSC101', checked: false, group: 'Course' },
+    { id: 'course-csc201', label: 'CSC201', checked: false, group: 'Course' },
+    { id: 'course-mth301', label: 'MTH301', checked: false, group: 'Course' },
+    { id: 'course-phy101', label: 'PHY101', checked: false, group: 'Course' },
+    { id: 'session-current', label: '2024/2025', checked: false, group: 'Session' },
+    { id: 'session-past', label: '2023/2024', checked: false, group: 'Session' },
+  ]);
+
+  const handleApplyFilters = (updatedFilters: FilterOption[]) => {
+    setFilterOptions(updatedFilters);
+    toast({
+      title: "Filters Applied",
+      description: "Your performance data has been filtered.",
+    });
+  };
 
   const handleExport = () => {
     toast({
@@ -72,7 +96,11 @@ export default function Performance() {
               className="pl-8 w-[200px]"
             />
           </div>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => setIsFilterOpen(true)}
+          >
             <Filter size={16} />
             Filter
           </Button>
@@ -210,6 +238,14 @@ export default function Performance() {
           </CardContent>
         </Card>
       </div>
+
+      <FilterModal 
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        options={filterOptions}
+        onApplyFilters={handleApplyFilters}
+        groups={['Level', 'Course', 'Session']}
+      />
     </DashboardLayout>
   );
 }

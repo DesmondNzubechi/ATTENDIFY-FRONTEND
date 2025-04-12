@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, PlusCircle, Eye, Trash2, Edit } from 'lucide-react';
+import { Search, Filter, PlusCircle, Eye, Trash2, Edit, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -15,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddSessionDialog } from '@/components/dashboard/AddSessionDialog';
+import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
 
 type AcademicSession = {
   id: string;
@@ -49,12 +51,72 @@ export default function AcademicSessions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddSessionOpen, setIsAddSessionOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const itemsPerPage = 10;
 
-  const filteredSessions = sessions.filter(session => 
-    session.sessionName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter options
+  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
+    { id: 'status-active', label: 'Active Sessions', checked: false, group: 'Status' },
+    { id: 'status-upcoming', label: 'Upcoming Sessions', checked: false, group: 'Status' },
+    { id: 'status-completed', label: 'Completed Sessions', checked: false, group: 'Status' },
+    { id: 'year-2022', label: 'Year 2022', checked: false, group: 'Year' },
+    { id: 'year-2023', label: 'Year 2023', checked: false, group: 'Year' },
+    { id: 'year-2024', label: 'Year 2024', checked: false, group: 'Year' },
+    { id: 'year-2025', label: 'Year 2025', checked: false, group: 'Year' },
+  ]);
+
+  const handleApplyFilters = (updatedFilters: FilterOption[]) => {
+    setFilterOptions(updatedFilters);
+    toast({
+      title: "Filters Applied",
+      description: "Your filter preferences have been applied.",
+    });
+  };
+
+  // Filter sessions based on search and filter options
+  const filteredSessions = React.useMemo(() => {
+    const activatedFilters = filterOptions.filter(filter => filter.checked);
+    const now = new Date();
+    
+    return sessions.filter(session => {
+      // Apply text search
+      const matchesSearch = session.sessionName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // If no filters are activated, just use text search
+      if (activatedFilters.length === 0) {
+        return matchesSearch;
+      }
+      
+      // Apply filters
+      const matchesFilters = activatedFilters.some(filter => {
+        if (filter.group === 'Status') {
+          const startDate = new Date(session.startDate);
+          const endDate = new Date(session.endDate);
+          
+          if (filter.id === 'status-active') {
+            return now >= startDate && now <= endDate;
+          }
+          if (filter.id === 'status-upcoming') {
+            return now < startDate;
+          }
+          if (filter.id === 'status-completed') {
+            return now > endDate;
+          }
+        }
+        
+        if (filter.group === 'Year') {
+          const year = filter.label.split('Year ')[1];
+          return session.sessionName.includes(year);
+        }
+        
+        return true;
+      });
+      
+      return matchesSearch && matchesFilters;
+    });
+  }, [sessions, searchQuery, filterOptions]);
 
   const pageCount = Math.ceil(filteredSessions.length / itemsPerPage);
   const paginatedSessions = filteredSessions.slice(
@@ -106,7 +168,11 @@ export default function AcademicSessions() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => setIsFilterOpen(true)}
+          >
             <Filter size={16} />
             Filter
           </Button>
@@ -212,6 +278,14 @@ export default function AcademicSessions() {
         open={isAddSessionOpen}
         onOpenChange={setIsAddSessionOpen}
         onSessionAdded={handleAddSession}
+      />
+
+      <FilterModal 
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        options={filterOptions}
+        onApplyFilters={handleApplyFilters}
+        groups={['Status', 'Year']}
       />
     </DashboardLayout>
   );

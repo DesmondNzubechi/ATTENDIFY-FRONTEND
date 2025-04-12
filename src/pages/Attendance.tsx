@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Play, FileDown, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Filter, Play, FileDown, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -15,186 +16,137 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ActivateAttendanceDialog } from '@/components/dashboard/ActivateAttendanceDialog';
-
-type Student = {
-  id: string;
-  name: string;
-  registrationNumber: string;
-  attendance: {
-    [date: string]: {
-      status: 'present' | 'absent' | 'not-marked';
-      time?: string;
-    }
-  }
-};
-
-type AttendanceSession = {
-  id: string;
-  date: string;
-  course: string;
-  level: string;
-  sessionName: string;
-  isActive: boolean;
-  students: Student[];
-};
-
-const initialAttendanceSessions: AttendanceSession[] = [
-  {
-    id: '1',
-    date: '2024-04-12',
-    course: 'Introduction to Computer Science (CSC101)',
-    level: '100',
-    sessionName: '2024/2025',
-    isActive: true,
-    students: [
-      {
-        id: '1',
-        name: 'John Doe',
-        registrationNumber: '2024/001',
-        attendance: {
-          '2024-04-10': { status: 'present', time: '09:00 AM' },
-          '2024-04-11': { status: 'present', time: '09:05 AM' },
-          '2024-04-12': { status: 'not-marked' }
-        }
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        registrationNumber: '2024/002',
-        attendance: {
-          '2024-04-10': { status: 'present', time: '09:10 AM' },
-          '2024-04-11': { status: 'absent' },
-          '2024-04-12': { status: 'not-marked' }
-        }
-      }
-    ]
-  },
-  {
-    id: '2',
-    date: '2024-04-11',
-    course: 'Data Structures and Algorithms (CSC201)',
-    level: '200',
-    sessionName: '2024/2025',
-    isActive: false,
-    students: [
-      {
-        id: '1',
-        name: 'John Doe',
-        registrationNumber: '2024/001',
-        attendance: {
-          '2024-04-11': { status: 'present', time: '10:00 AM' }
-        }
-      },
-      {
-        id: '3',
-        name: 'Michael Johnson',
-        registrationNumber: '2024/003',
-        attendance: {
-          '2024-04-11': { status: 'absent' }
-        }
-      }
-    ]
-  }
-];
-
-// Sample data for the dialogs
-const courses = [
-  { id: '1', name: 'Introduction to Computer Science (CSC101)' },
-  { id: '2', name: 'Data Structures and Algorithms (CSC201)' },
-  { id: '3', name: 'Advanced Calculus (MTH301)' },
-  { id: '4', name: 'Introduction to Physics (PHY101)' },
-  { id: '5', name: 'Organic Chemistry (CHM202)' }
-];
-
-const sessions = [
-  { id: '1', name: '2023/2024' },
-  { id: '2', name: '2024/2025' },
-  { id: '3', name: '2022/2023' }
-];
+import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
+import { attendanceService, AttendanceSession } from '@/services/api/attendanceService';
 
 export default function Attendance() {
-  const [attendanceSessions, setAttendanceSessions] = useState<AttendanceSession[]>(initialAttendanceSessions);
-  const [selectedSession, setSelectedSession] = useState<AttendanceSession | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSession, setSelectedSession] = useState<AttendanceSession | null>(null);
   const [isActivateAttendanceOpen, setIsActivateAttendanceOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const filteredSessions = attendanceSessions.filter(session => 
-    session.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.sessionName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Setup filter options
+  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
+    { id: 'level-100', label: 'Level 100', checked: false, group: 'Level' },
+    { id: 'level-200', label: 'Level 200', checked: false, group: 'Level' },
+    { id: 'level-300', label: 'Level 300', checked: false, group: 'Level' },
+    { id: 'level-400', label: 'Level 400', checked: false, group: 'Level' },
+    { id: 'session-current', label: 'Current Session', checked: false, group: 'Session' },
+    { id: 'session-past', label: 'Past Sessions', checked: false, group: 'Session' },
+    { id: 'status-active', label: 'Active Sessions', checked: false, group: 'Status' },
+    { id: 'status-inactive', label: 'Inactive Sessions', checked: false, group: 'Status' },
+  ]);
+
+  // Fetch attendance sessions
+  const { data: attendanceSessions = [], isLoading } = useQuery({
+    queryKey: ['attendanceSessions'],
+    queryFn: attendanceService.getAllAttendance,
+  });
+
+  // Mark attendance mutation
+  const markAttendanceMutation = useMutation({
+    mutationFn: ({ attendanceId, data }: { attendanceId: string; data: any }) => 
+      attendanceService.markAttendance(attendanceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendanceSessions'] });
+      toast({
+        title: "Attendance Marked",
+        description: "Student attendance has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to mark attendance",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Activate attendance mutation
+  const activateAttendanceMutation = useMutation({
+    mutationFn: attendanceService.createAttendance,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendanceSessions'] });
+      toast({
+        title: "Attendance Activated",
+        description: "Attendance session has been activated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to activate attendance",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleActivateAttendance = (data: any) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const newSession: AttendanceSession = {
-      id: `${attendanceSessions.length + 1}`,
-      date: today,
-      course: courses.find(c => c.id === data.courseId)?.name || '',
-      level: data.level,
-      sessionName: sessions.find(s => s.id === data.sessionId)?.name || '',
-      isActive: true,
-      students: initialAttendanceSessions[0].students.map(student => ({
-        ...student,
-        attendance: {
-          ...student.attendance,
-          [today]: { status: 'not-marked' }
-        }
-      }))
-    };
-    
-    setAttendanceSessions([newSession, ...attendanceSessions]);
-    setSelectedSession(newSession);
-    
-    toast({
-      title: "Attendance Activated",
-      description: "Attendance session has been activated successfully.",
-    });
+    activateAttendanceMutation.mutate(data);
   };
 
   const handleMarkAttendance = (studentId: string, status: 'present' | 'absent') => {
     if (!selectedSession) return;
     
-    const today = new Date().toISOString().split('T')[0];
-    const currentTime = new Date().toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true
-    });
+    const data = {
+      studentId,
+      status,
+      date: new Date().toISOString().split('T')[0],
+    };
     
-    const updatedSessions = attendanceSessions.map(session => {
-      if (session.id === selectedSession.id) {
-        return {
-          ...session,
-          students: session.students.map(student => {
-            if (student.id === studentId) {
-              return {
-                ...student,
-                attendance: {
-                  ...student.attendance,
-                  [today]: { 
-                    status, 
-                    time: status === 'present' ? currentTime : undefined 
-                  }
-                }
-              };
-            }
-            return student;
-          })
-        };
-      }
-      return session;
-    });
-    
-    setAttendanceSessions(updatedSessions);
-    setSelectedSession(updatedSessions.find(s => s.id === selectedSession.id) || null);
-    
-    toast({
-      title: "Attendance Marked",
-      description: `Student marked as ${status}.`,
+    markAttendanceMutation.mutate({ 
+      attendanceId: selectedSession.id, 
+      data
     });
   };
+
+  const handleApplyFilters = (updatedFilters: FilterOption[]) => {
+    setFilterOptions(updatedFilters);
+  };
+
+  // Filter attendance sessions based on search query and filter options
+  const filteredSessions = React.useMemo(() => {
+    const activatedFilters = filterOptions.filter(filter => filter.checked);
+    
+    return attendanceSessions.filter((session: AttendanceSession) => {
+      // Apply text search
+      const matchesSearch = session.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          session.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          session.sessionName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // If no filters are activated, just use text search
+      if (activatedFilters.length === 0) {
+        return matchesSearch;
+      }
+      
+      // Apply filters
+      const matchesFilters = activatedFilters.some(filter => {
+        if (filter.group === 'Level') {
+          return session.level === filter.label.split(' ')[1];
+        }
+        if (filter.group === 'Status') {
+          return (filter.id === 'status-active' && session.isActive) ||
+                 (filter.id === 'status-inactive' && !session.isActive);
+        }
+        return true;
+      });
+      
+      return matchesSearch && matchesFilters;
+    });
+  }, [attendanceSessions, searchQuery, filterOptions]);
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-[70vh]">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -210,7 +162,11 @@ export default function Attendance() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => setIsFilterOpen(true)}
+          >
             <Filter size={16} />
             Filter
           </Button>
@@ -235,7 +191,7 @@ export default function Attendance() {
               {filteredSessions.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">No attendance sessions found.</p>
               ) : (
-                filteredSessions.map((session) => (
+                filteredSessions.map((session: AttendanceSession) => (
                   <div 
                     key={session.id} 
                     className={`p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${selectedSession?.id === session.id ? 'border-blue-500 bg-blue-50' : ''}`}
@@ -290,24 +246,26 @@ export default function Attendance() {
                 </p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
+              <Table className="border">
+                <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead>Student Name</TableHead>
-                    <TableHead>Registration Number</TableHead>
+                    <TableHead className="w-12 text-center border-r">#</TableHead>
+                    <TableHead className="border-r">Student Name</TableHead>
+                    <TableHead className="border-r">Registration Number</TableHead>
                     <TableHead>Attendance Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {selectedSession.students.map((student) => {
+                  {selectedSession.students.map((student, index) => {
                     const today = new Date().toISOString().split('T')[0];
                     const attendanceToday = student.attendance[today] || { status: 'not-marked' };
                     
                     return (
-                      <TableRow key={student.id}>
-                        <TableCell>{student.name}</TableCell>
-                        <TableCell>{student.registrationNumber}</TableCell>
+                      <TableRow key={student.id} className="border-b">
+                        <TableCell className="text-center font-medium border-r">{index + 1}</TableCell>
+                        <TableCell className="border-r">{student.name}</TableCell>
+                        <TableCell className="border-r">{student.registrationNumber}</TableCell>
                         <TableCell>
                           {attendanceToday.status === 'present' ? (
                             <span className="flex items-center text-green-600">
@@ -331,19 +289,17 @@ export default function Attendance() {
                             <div className="flex space-x-1">
                               <Button 
                                 size="sm" 
-                                variant="outline" 
-                                className="h-8 px-2 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700"
+                                className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
                                 onClick={() => handleMarkAttendance(student.id, 'present')}
-                                disabled={attendanceToday.status === 'present'}
+                                disabled={attendanceToday.status === 'present' || markAttendanceMutation.isPending}
                               >
                                 Present
                               </Button>
                               <Button 
                                 size="sm" 
-                                variant="outline" 
-                                className="h-8 px-2 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
+                                className="h-8 px-2 bg-red-500 hover:bg-red-600 text-white"
                                 onClick={() => handleMarkAttendance(student.id, 'absent')}
-                                disabled={attendanceToday.status === 'absent'}
+                                disabled={attendanceToday.status === 'absent' || markAttendanceMutation.isPending}
                               >
                                 Absent
                               </Button>
@@ -364,8 +320,26 @@ export default function Attendance() {
         open={isActivateAttendanceOpen}
         onOpenChange={setIsActivateAttendanceOpen}
         onAttendanceActivated={handleActivateAttendance}
-        courses={courses}
-        sessions={sessions}
+        courses={[
+          { id: '1', name: 'Introduction to Computer Science (CSC101)' },
+          { id: '2', name: 'Data Structures and Algorithms (CSC201)' },
+          { id: '3', name: 'Advanced Calculus (MTH301)' },
+          { id: '4', name: 'Introduction to Physics (PHY101)' },
+          { id: '5', name: 'Organic Chemistry (CHM202)' }
+        ]}
+        sessions={[
+          { id: '1', name: '2023/2024' },
+          { id: '2', name: '2024/2025' },
+          { id: '3', name: '2022/2023' }
+        ]}
+      />
+
+      <FilterModal 
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        options={filterOptions}
+        onApplyFilters={handleApplyFilters}
+        groups={['Level', 'Session', 'Status']}
       />
     </DashboardLayout>
   );

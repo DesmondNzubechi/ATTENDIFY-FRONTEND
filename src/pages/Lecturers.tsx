@@ -14,6 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
+import { useToast } from '@/hooks/use-toast';
 
 type Lecturer = {
   id: string;
@@ -87,13 +89,59 @@ export default function Lecturers() {
   const [lecturers] = useState<Lecturer[]>(initialLecturers);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { toast } = useToast();
   const itemsPerPage = 10;
 
-  const filteredLecturers = lecturers.filter(lecturer => 
-    lecturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lecturer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lecturer.department.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter options
+  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
+    { id: 'faculty-science', label: 'Faculty of Science', checked: false, group: 'Faculty' },
+    { id: 'faculty-engineering', label: 'Faculty of Engineering', checked: false, group: 'Faculty' },
+    { id: 'faculty-arts', label: 'Faculty of Arts', checked: false, group: 'Faculty' },
+    { id: 'faculty-medicine', label: 'Faculty of Medicine & Surgery', checked: false, group: 'Faculty' },
+    { id: 'dept-chemistry', label: 'Department of Chemistry', checked: false, group: 'Department' },
+    { id: 'dept-physics', label: 'Department of Physics', checked: false, group: 'Department' },
+    { id: 'dept-civil', label: 'Department of Civil Engineering', checked: false, group: 'Department' },
+    { id: 'dept-philosophy', label: 'Department of Philosophy', checked: false, group: 'Department' },
+  ]);
+
+  const handleApplyFilters = (updatedFilters: FilterOption[]) => {
+    setFilterOptions(updatedFilters);
+    toast({
+      title: "Filters Applied",
+      description: "Your filter preferences have been applied.",
+    });
+  };
+
+  // Filter lecturers based on search and filter options
+  const filteredLecturers = React.useMemo(() => {
+    const activatedFilters = filterOptions.filter(filter => filter.checked);
+    
+    return lecturers.filter(lecturer => {
+      // Apply text search
+      const matchesSearch = lecturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          lecturer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          lecturer.department.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // If no filters are activated, just use text search
+      if (activatedFilters.length === 0) {
+        return matchesSearch;
+      }
+      
+      // Apply filters
+      const matchesFilters = activatedFilters.some(filter => {
+        if (filter.group === 'Faculty') {
+          return lecturer.faculty === filter.label.split('Faculty of ')[1];
+        }
+        if (filter.group === 'Department') {
+          return lecturer.department === filter.label.split('Department of ')[1];
+        }
+        return true;
+      });
+      
+      return matchesSearch && matchesFilters;
+    });
+  }, [lecturers, searchQuery, filterOptions]);
 
   const pageCount = Math.ceil(filteredLecturers.length / itemsPerPage);
   const paginatedLecturers = filteredLecturers.slice(
@@ -115,7 +163,11 @@ export default function Lecturers() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => setIsFilterOpen(true)}
+          >
             <Filter size={16} />
             Filter
           </Button>
@@ -203,6 +255,14 @@ export default function Lecturers() {
           )}
         </CardContent>
       </Card>
+
+      <FilterModal 
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        options={filterOptions}
+        onApplyFilters={handleApplyFilters}
+        groups={['Faculty', 'Department']}
+      />
     </DashboardLayout>
   );
 }
