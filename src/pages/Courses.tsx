@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, PlusCircle, Eye, Trash2, Edit } from 'lucide-react';
+import { Search, Filter, PlusCircle, Eye, Trash2, Edit, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -15,59 +16,58 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddCourseDialog } from '@/components/dashboard/AddCourseDialog';
-
-type Course = {
-  id: string;
-  courseName: string;
-  courseCode: string;
-  description: string;
-};
-
-const initialCourses: Course[] = [
-  {
-    id: '1',
-    courseName: 'Introduction to Computer Science',
-    courseCode: 'CSC101',
-    description: 'Basic introduction to computer science concepts.'
-  },
-  {
-    id: '2',
-    courseName: 'Data Structures and Algorithms',
-    courseCode: 'CSC201',
-    description: 'Study of data structures and algorithms for solving computational problems.'
-  },
-  {
-    id: '3',
-    courseName: 'Advanced Calculus',
-    courseCode: 'MTH301',
-    description: 'Study of advanced calculus concepts.'
-  },
-  {
-    id: '4',
-    courseName: 'Introduction to Physics',
-    courseCode: 'PHY101',
-    description: 'Study of basic physics principles.'
-  },
-  {
-    id: '5',
-    courseName: 'Organic Chemistry',
-    courseCode: 'CHM202',
-    description: 'Study of organic chemical reactions and compounds.'
-  }
-];
+import { coursesService, Course } from '@/services/api/coursesService';
 
 export default function Courses() {
-  const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const itemsPerPage = 10;
 
-  const filteredCourses = courses.filter(course => 
+  // Fetch courses
+  const { data: courses = [], isLoading, isError } = useQuery({
+    queryKey: ['courses'],
+    queryFn: coursesService.getAllCourses
+  });
+
+  // Delete course mutation
+  const deleteMutation = useMutation({
+    mutationFn: coursesService.deleteCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast({
+        title: "Course Deleted",
+        description: "The course has been removed from the system.",
+      });
+    }
+  });
+
+  // Add course mutation
+  const addMutation = useMutation({
+    mutationFn: coursesService.addCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast({
+        title: "Course Added",
+        description: "The course has been added successfully.",
+      });
+    }
+  });
+
+  const handleDeleteCourse = (courseId: string) => {
+    deleteMutation.mutate(courseId);
+  };
+
+  const handleAddCourse = (newCourse: any) => {
+    addMutation.mutate(newCourse);
+  };
+
+  const filteredCourses = courses.filter((course: Course) => 
     course.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (course.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const pageCount = Math.ceil(filteredCourses.length / itemsPerPage);
@@ -76,26 +76,21 @@ export default function Courses() {
     currentPage * itemsPerPage
   );
 
-  const handleDeleteCourse = (courseId: string) => {
-    setCourses(courses.filter(course => course.id !== courseId));
-    toast({
-      title: "Course Deleted",
-      description: "The course has been removed from the system.",
-    });
-  };
-
-  const handleAddCourse = (newCourse: any) => {
-    const courseWithId = {
-      ...newCourse,
-      id: `${courses.length + 1}`,
-    };
-    
-    setCourses([...courses, courseWithId]);
-    toast({
-      title: "Course Added",
-      description: "The course has been added successfully.",
-    });
-  };
+  if (isError) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[70vh]">
+          <p className="text-red-500 mb-4">Error loading courses</p>
+          <Button 
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['courses'] })}
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -130,76 +125,93 @@ export default function Courses() {
           <CardTitle>Course List</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Course Name</TableHead>
-                <TableHead>Course Code</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedCourses.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell>{course.courseName}</TableCell>
-                  <TableCell>{course.courseCode}</TableCell>
-                  <TableCell className="max-w-xs truncate">{course.description}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <button className="text-blue-500 hover:text-blue-600">
-                        <Eye size={16} />
-                      </button>
-                      <button className="text-yellow-500 hover:text-yellow-600">
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        className="text-red-500 hover:text-red-600"
-                        onClick={() => handleDeleteCourse(course.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          {pageCount > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-500">
-                {filteredCourses.length} Results
-              </div>
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  &lt;
-                </Button>
-                {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                  <Button 
-                    key={page}
-                    variant={page === currentPage ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                  disabled={currentPage === pageCount}
-                >
-                  &gt;
-                </Button>
-              </div>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-10 w-10 animate-spin text-gray-400" />
             </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Course Name</TableHead>
+                    <TableHead>Course Code</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedCourses.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10 text-gray-500">
+                        No courses found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedCourses.map((course: Course) => (
+                      <TableRow key={course.id}>
+                        <TableCell>{course.courseName}</TableCell>
+                        <TableCell>{course.courseCode}</TableCell>
+                        <TableCell className="max-w-xs truncate">{course.description}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <button className="text-blue-500 hover:text-blue-600">
+                              <Eye size={16} />
+                            </button>
+                            <button className="text-yellow-500 hover:text-yellow-600">
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              className="text-red-500 hover:text-red-600"
+                              onClick={() => handleDeleteCourse(course.id)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+
+              {pageCount > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-sm text-gray-500">
+                    {filteredCourses.length} Results
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      &lt;
+                    </Button>
+                    {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                      <Button 
+                        key={page}
+                        variant={page === currentPage ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                      disabled={currentPage === pageCount}
+                    >
+                      &gt;
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
