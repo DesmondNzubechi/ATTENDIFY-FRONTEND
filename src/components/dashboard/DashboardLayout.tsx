@@ -17,7 +17,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div 
         className={cn(
           "flex-1 overflow-auto",
-          isMobile ? "w-full" : "ml-"
+          isMobile ? "w-full" : "ml-64"
         )}
       >
         <main className="p-4 md:p-6">

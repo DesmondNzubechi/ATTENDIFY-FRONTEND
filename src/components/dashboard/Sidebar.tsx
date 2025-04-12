@@ -94,7 +94,12 @@ export function Sidebar() {
             active={location.pathname === '/lecturers'} 
             to="/lecturers"
           />
-          <SidebarItem icon={GraduationCap} label="Student" />
+          <SidebarItem 
+            icon={GraduationCap} 
+            label="Student" 
+            active={location.pathname === '/students'} 
+            to="/students"
+          />
           <SidebarItem icon={Calendar} label="Attendance" />
           <SidebarItem icon={BookOpen} label="Course" />
           <SidebarItem icon={Library} label="Academic Session" />
