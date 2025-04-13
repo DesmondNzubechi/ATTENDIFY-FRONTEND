@@ -2,17 +2,40 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircle } from 'lucide-react';
 import { ActivateAttendanceDialog } from '@/components/dashboard/ActivateAttendanceDialog';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
 import { useAttendanceStore } from '@/stores/useAttendanceStore';
 import { SearchAndFilters } from '@/components/attendance/SearchAndFilters';
 import { AttendanceSessionsList } from '@/components/attendance/AttendanceSessionsList';
 import { AttendanceTable } from '@/components/attendance/AttendanceTable';
+import { useCoursesStore } from '@/stores/useCoursesStore';
+import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
+import { Button } from '@/components/ui/button';
+import { attendanceService } from '@/services/api/attendanceService';
 
 export default function Attendance() {
   const { toast } = useToast();
-  const { sessions, isLoading, addSession } = useAttendanceStore();
+  const { 
+    sessions, 
+    isLoading, 
+    error, 
+    fetchAttendance, 
+    addSession,
+    setError
+  } = useAttendanceStore();
+
+  const { 
+    courses, 
+    fetchCourses,
+    isLoading: coursesLoading 
+  } = useCoursesStore();
+
+  const { 
+    sessions: academicSessions, 
+    fetchSessions,
+    isLoading: sessionsLoading 
+  } = useAcademicSessionsStore();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isActivateAttendanceOpen, setIsActivateAttendanceOpen] = useState(false);
@@ -24,60 +47,47 @@ export default function Attendance() {
     { id: 'level-200', label: 'Level 200', checked: false, group: 'Level' },
     { id: 'level-300', label: 'Level 300', checked: false, group: 'Level' },
     { id: 'level-400', label: 'Level 400', checked: false, group: 'Level' },
-    { id: 'session-current', label: 'Current Session', checked: false, group: 'Session' },
-    { id: 'session-past', label: 'Past Sessions', checked: false, group: 'Session' },
+    { id: 'semester-first', label: 'First Semester', checked: false, group: 'Semester' },
+    { id: 'semester-second', label: 'Second Semester', checked: false, group: 'Semester' },
     { id: 'status-active', label: 'Active Sessions', checked: false, group: 'Status' },
     { id: 'status-inactive', label: 'Inactive Sessions', checked: false, group: 'Status' },
   ]);
 
-  const handleActivateAttendance = (data: any) => {
-    // Generate a simple ID for the new session
-    const newSession = {
-      id: `${sessions.length + 1}`,
-      course: data.course,
-      level: data.level,
-      sessionName: data.session,
-      date: new Date().toISOString(),
-      isActive: true,
-      students: [
-        {
-          id: '1',
-          name: 'Elizabeth Alan',
-          registrationNumber: 'P7345H3234',
-          attendance: {}
-        },
-        {
-          id: '2',
-          name: 'Desmond Nyeko',
-          registrationNumber: 'P7346H3234',
-          attendance: {}
-        },
-        {
-          id: '3',
-          name: 'Cedar James',
-          registrationNumber: 'P7346H3224',
-          attendance: {}
-        },
-        {
-          id: '4',
-          name: 'Sophie Garcia',
-          registrationNumber: 'P7347H3234',
-          attendance: {}
-        },
-        {
-          id: '5',
-          name: 'Michael Wong',
-          registrationNumber: 'P7348H3234',
-          attendance: {}
-        }
-      ]
-    };
-    
-    addSession(newSession);
-    toast({
-      title: "Attendance Activated",
-      description: "Attendance session has been activated successfully.",
-    });
+  // Fetch attendance data on component mount
+  useEffect(() => {
+    fetchAttendance();
+    fetchCourses();
+    fetchSessions();
+  }, [fetchAttendance, fetchCourses, fetchSessions]);
+
+  const handleActivateAttendance = async (data: any) => {
+    try {
+      // Format the data for the API
+      const attendanceData = {
+        courseId: data.courseId,
+        acedemicSessionId: data.sessionId,
+        semester: data.semester || "first semester",
+        level: data.level
+      };
+
+      // Call the API to create a new attendance session
+      const response = await attendanceService.createAttendance(attendanceData);
+      
+      // Refresh the attendance data after creating a new session
+      fetchAttendance();
+      
+      toast({
+        title: "Attendance Activated",
+        description: "Attendance session has been activated successfully.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to activate attendance');
+      toast({
+        title: "Error",
+        description: "Failed to activate attendance. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleApplyFilters = (updatedFilters: FilterOption[]) => {
@@ -90,9 +100,11 @@ export default function Attendance() {
     
     return sessions.filter((session) => {
       // Apply text search
-      const matchesSearch = session.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          session.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          session.sessionName.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = 
+        session.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.sessionName.toLowerCase().includes(searchQuery.toLowerCase());
       
       // If no filters are activated, just use text search
       if (activatedFilters.length === 0) {
@@ -103,6 +115,10 @@ export default function Attendance() {
       const matchesFilters = activatedFilters.some(filter => {
         if (filter.group === 'Level') {
           return session.level === filter.label.split(' ')[1];
+        }
+        if (filter.group === 'Semester') {
+          const semester = filter.label.toLowerCase().includes('first') ? 'first semester' : 'second semester';
+          return session.semester.toLowerCase() === semester;
         }
         if (filter.group === 'Status') {
           return (filter.id === 'status-active' && session.isActive) ||
@@ -115,11 +131,27 @@ export default function Attendance() {
     });
   }, [sessions, searchQuery, filterOptions]);
 
-  if (isLoading) {
+  // Show loading state
+  if (isLoading || coursesLoading || sessionsLoading) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-[70vh]">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+          <span className="ml-2 text-blue-500">Loading attendance data...</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col justify-center items-center h-[70vh]">
+          <p className="text-red-500 mb-4">Error loading attendance data: {error}</p>
+          <Button onClick={() => fetchAttendance()}>
+            Try Again
+          </Button>
         </div>
       </DashboardLayout>
     );
@@ -127,6 +159,17 @@ export default function Attendance() {
 
   return (
     <DashboardLayout>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Attendance</h1>
+        <Button 
+          onClick={() => setIsActivateAttendanceOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 gap-2"
+        >
+          <PlusCircle size={16} />
+          Add Attendance
+        </Button>
+      </div>
+
       <SearchAndFilters 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -143,18 +186,14 @@ export default function Attendance() {
         open={isActivateAttendanceOpen}
         onOpenChange={setIsActivateAttendanceOpen}
         onAttendanceActivated={handleActivateAttendance}
-        courses={[
-          { id: '1', name: 'Introduction to Computer Science (CSC101)' },
-          { id: '2', name: 'Data Structures and Algorithms (CSC201)' },
-          { id: '3', name: 'Advanced Calculus (MTH301)' },
-          { id: '4', name: 'Introduction to Physics (PHY101)' },
-          { id: '5', name: 'Organic Chemistry (CHM202)' }
-        ]}
-        sessions={[
-          { id: '1', name: '2023/2024' },
-          { id: '2', name: '2024/2025' },
-          { id: '3', name: '2022/2023' }
-        ]}
+        courses={courses.map(course => ({ 
+          id: course.id, 
+          name: `${course.courseName} (${course.courseCode})` 
+        }))}
+        sessions={academicSessions.map(session => ({
+          id: session.id,
+          name: session.sessionName
+        }))}
       />
 
       <FilterModal 
@@ -162,7 +201,7 @@ export default function Attendance() {
         onOpenChange={setIsFilterOpen}
         options={filterOptions}
         onApplyFilters={handleApplyFilters}
-        groups={['Level', 'Session', 'Status']}
+        groups={['Level', 'Semester', 'Status']}
       />
     </DashboardLayout>
   );

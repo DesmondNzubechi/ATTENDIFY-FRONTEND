@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { FileDown, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileDown, CheckCircle, XCircle, Clock, PlusCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -13,19 +13,37 @@ import {
 } from "@/components/ui/table";
 import { useAttendanceStore, AttendanceSession } from '@/stores/useAttendanceStore';
 import { useToast } from '@/hooks/use-toast';
+import { attendanceService } from '@/services/api/attendanceService';
 
 export const AttendanceTable = () => {
-  const { selectedSession, markAttendance } = useAttendanceStore();
+  const { selectedSession, markAttendance, setError } = useAttendanceStore();
   const { toast } = useToast();
 
-  const handleMarkAttendance = (studentId: string, status: 'present' | 'absent') => {
+  const handleMarkAttendance = async (studentId: string, status: 'present' | 'absent') => {
     if (!selectedSession) return;
     
-    markAttendance(selectedSession.id, studentId, status);
-    toast({
-      title: "Attendance Marked",
-      description: "Student attendance has been updated successfully.",
-    });
+    try {
+      // Call the API to mark attendance
+      await attendanceService.markAttendance(selectedSession.id, {
+        studentId,
+        status
+      });
+      
+      // Update local state
+      markAttendance(selectedSession.id, studentId, status);
+      
+      toast({
+        title: "Attendance Marked",
+        description: "Student attendance has been updated successfully.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to mark attendance');
+      toast({
+        title: "Error",
+        description: "Failed to mark attendance. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (!selectedSession) {
@@ -51,12 +69,14 @@ export const AttendanceTable = () => {
     <Card className="lg:col-span-8">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>
-          {`${selectedSession.course} - Level ${selectedSession.level}`}
+          {`${selectedSession.course} (${selectedSession.courseCode}) - Level ${selectedSession.level}`}
         </CardTitle>
-        <Button variant="outline" className="gap-2">
-          <FileDown size={16} />
-          Export
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2">
+            <FileDown size={16} />
+            Export
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table className="border">
@@ -133,6 +153,12 @@ export const AttendanceTable = () => {
           </TableBody>
         </Table>
       </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
+          <PlusCircle size={16} />
+          Add Attendance
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,43 +16,26 @@ import {
 } from "@/components/ui/table";
 import { AddSessionDialog } from '@/components/dashboard/AddSessionDialog';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
-
-type AcademicSession = {
-  id: string;
-  sessionName: string;
-  startDate: string;
-  endDate: string;
-};
-
-const initialSessions: AcademicSession[] = [
-  {
-    id: '1',
-    sessionName: '2023/2024',
-    startDate: '2023-09-01',
-    endDate: '2024-07-31'
-  },
-  {
-    id: '2',
-    sessionName: '2024/2025',
-    startDate: '2024-09-01',
-    endDate: '2025-07-31'
-  },
-  {
-    id: '3',
-    sessionName: '2022/2023',
-    startDate: '2022-09-01',
-    endDate: '2023-07-31'
-  }
-];
+import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
+import { academicSessionsService } from '@/services/api/academicSessionsService';
 
 export default function AcademicSessions() {
-  const [sessions, setSessions] = useState<AcademicSession[]>(initialSessions);
+  const { 
+    sessions, 
+    isLoading, 
+    error, 
+    fetchSessions,
+    addSession: addSessionToStore,
+    deleteSession: deleteSessionFromStore,
+    setError
+  } = useAcademicSessionsStore();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddSessionOpen, setIsAddSessionOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  
   const itemsPerPage = 10;
 
   // Filter options
@@ -61,11 +43,16 @@ export default function AcademicSessions() {
     { id: 'status-active', label: 'Active Sessions', checked: false, group: 'Status' },
     { id: 'status-upcoming', label: 'Upcoming Sessions', checked: false, group: 'Status' },
     { id: 'status-completed', label: 'Completed Sessions', checked: false, group: 'Status' },
-    { id: 'year-2022', label: 'Year 2022', checked: false, group: 'Year' },
-    { id: 'year-2023', label: 'Year 2023', checked: false, group: 'Year' },
     { id: 'year-2024', label: 'Year 2024', checked: false, group: 'Year' },
     { id: 'year-2025', label: 'Year 2025', checked: false, group: 'Year' },
+    { id: 'year-2026', label: 'Year 2026', checked: false, group: 'Year' },
+    { id: 'year-2027', label: 'Year 2027', checked: false, group: 'Year' },
   ]);
+
+  // Fetch academic sessions on component mount
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleApplyFilters = (updatedFilters: FilterOption[]) => {
     setFilterOptions(updatedFilters);
@@ -92,17 +79,22 @@ export default function AcademicSessions() {
       // Apply filters
       const matchesFilters = activatedFilters.some(filter => {
         if (filter.group === 'Status') {
-          const startDate = new Date(session.startDate);
-          const endDate = new Date(session.endDate);
-          
-          if (filter.id === 'status-active') {
-            return now >= startDate && now <= endDate;
-          }
-          if (filter.id === 'status-upcoming') {
-            return now < startDate;
-          }
-          if (filter.id === 'status-completed') {
-            return now > endDate;
+          try {
+            const startDate = new Date(session.startDate);
+            const endDate = new Date(session.endDate);
+            
+            if (filter.id === 'status-active') {
+              return session.isActive;
+            }
+            if (filter.id === 'status-upcoming') {
+              return now < startDate;
+            }
+            if (filter.id === 'status-completed') {
+              return now > endDate;
+            }
+          } catch (error) {
+            console.error('Error parsing date:', error);
+            return false;
           }
         }
         
@@ -124,35 +116,98 @@ export default function AcademicSessions() {
     currentPage * itemsPerPage
   );
 
-  const handleDeleteSession = (sessionId: string) => {
-    setSessions(sessions.filter(session => session.id !== sessionId));
-    toast({
-      title: "Academic Session Deleted",
-      description: "The academic session has been removed from the system.",
-    });
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await academicSessionsService.deleteSession(sessionId);
+      deleteSessionFromStore(sessionId);
+      toast({
+        title: "Academic Session Deleted",
+        description: "The academic session has been removed from the system.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete academic session');
+      toast({
+        title: "Error",
+        description: "Failed to delete academic session. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleAddSession = (newSession: any) => {
-    const sessionWithId = {
-      ...newSession,
-      id: `${sessions.length + 1}`,
-    };
-    
-    setSessions([...sessions, sessionWithId]);
-    toast({
-      title: "Academic Session Added",
-      description: "The academic session has been added successfully.",
-    });
+  const handleAddSession = async (newSession: any) => {
+    try {
+      const response = await academicSessionsService.createSession({
+        sessionName: newSession.name,
+        startDate: newSession.startDate,
+        endDate: newSession.endDate
+      });
+      
+      // Add to store with the id from the response
+      if (response && response.data && response.data.data && response.data.data[0]) {
+        const addedSession = response.data.data[0];
+        addSessionToStore({
+          id: addedSession._id,
+          sessionName: addedSession.name,
+          startDate: addedSession.start,
+          endDate: addedSession.end,
+          semesters: addedSession.semesters || [],
+          isActive: addedSession.active
+        });
+      }
+      
+      toast({
+        title: "Academic Session Added",
+        description: "The academic session has been added successfully.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to add academic session');
+      toast({
+        title: "Error",
+        description: "Failed to add academic session. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return dateString; // Return the original string if parsing fails
+    }
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-[70vh]">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+          <span className="ml-2 text-blue-500">Loading academic sessions...</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[70vh]">
+          <p className="text-red-500 mb-4">Error loading academic sessions: {error}</p>
+          <Button 
+            onClick={() => fetchSessions()}
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -197,42 +252,65 @@ export default function AcademicSessions() {
                 <TableHead>Session Name</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>End Date</TableHead>
+                <TableHead>Semesters</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedSessions.map((session) => (
-                <TableRow key={session.id}>
-                  <TableCell>{session.sessionName}</TableCell>
-                  <TableCell>{formatDate(session.startDate)}</TableCell>
-                  <TableCell>{formatDate(session.endDate)}</TableCell>
-                  <TableCell>
-                    {new Date() >= new Date(session.startDate) && new Date() <= new Date(session.endDate) 
-                      ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
-                      : new Date() < new Date(session.startDate)
-                        ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Upcoming</span>
-                        : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Completed</span>
-                    }
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <button className="text-blue-500 hover:text-blue-600">
-                        <Eye size={16} />
-                      </button>
-                      <button className="text-yellow-500 hover:text-yellow-600">
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        className="text-red-500 hover:text-red-600"
-                        onClick={() => handleDeleteSession(session.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              {paginatedSessions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-gray-500">
+                    No academic sessions found. Please add a new session.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                paginatedSessions.map((session) => (
+                  <TableRow key={session.id}>
+                    <TableCell>{session.sessionName}</TableCell>
+                    <TableCell>{formatDate(session.startDate)}</TableCell>
+                    <TableCell>{formatDate(session.endDate)}</TableCell>
+                    <TableCell>
+                      {session.semesters && session.semesters.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {session.semesters.map((semester, index) => (
+                            <span 
+                              key={index} 
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                            >
+                              {semester}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        'Not specified'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {session.isActive 
+                        ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                        : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Inactive</span>
+                      }
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <button className="text-blue-500 hover:text-blue-600">
+                          <Eye size={16} />
+                        </button>
+                        <button className="text-yellow-500 hover:text-yellow-600">
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="text-red-500 hover:text-red-600"
+                          onClick={() => handleDeleteSession(session.id)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
 

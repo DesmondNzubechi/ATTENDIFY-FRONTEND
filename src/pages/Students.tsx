@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Eye, Trash2, Search, Filter, UserPlus } from 'lucide-react';
+import { Eye, Trash2, Search, Filter, UserPlus, Loader2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import {
   Table,
@@ -16,96 +16,37 @@ import {
 } from "@/components/ui/table";
 import { AddStudentDialog } from '@/components/dashboard/AddStudentDialog';
 import { useToast } from '@/hooks/use-toast';
-
-type Student = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  registrationNumber: string;
-  course: string;
-  avatar: string;
-};
- 
-const initialStudents: Student[] = [
-  {
-    id: '1',
-    firstName: 'Elizabeth',
-    lastName: 'Alan',
-    email: 'elizabeth@gmail.com',
-    registrationNumber: 'P7345H3234',
-    course: 'Medicine & Surgery',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: '2',
-    firstName: 'Desmond',
-    lastName: 'Nyeko',
-    email: 'desmond@gmail.com',
-    registrationNumber: 'P7346H3234',
-    course: 'Law',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: '3',
-    firstName: 'Cedar',
-    lastName: 'James',
-    email: 'cedar@gmail.com',
-    registrationNumber: 'P7346H3224',
-    course: 'Engineering',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: '4',
-    firstName: 'Sophie',
-    lastName: 'Garcia',
-    email: 'sophie@gmail.com',
-    registrationNumber: 'P7347H3234',
-    course: 'Computer Science',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: '5',
-    firstName: 'Michael',
-    lastName: 'Wong',
-    email: 'michael@gmail.com',
-    registrationNumber: 'P7348H3234',
-    course: 'Business Administration',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: '6',
-    firstName: 'Olivia',
-    lastName: 'Smith',
-    email: 'olivia@gmail.com',
-    registrationNumber: 'P7349H3234',
-    course: 'Psychology',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: '7',
-    firstName: 'Ethan',
-    lastName: 'Johnson',
-    email: 'ethan@gmail.com',
-    registrationNumber: 'P7350H3234',
-    course: 'Physics',
-    avatar: '/placeholder.svg'
-  },
-];
+import { useStudentsStore } from '@/stores/useStudentsStore';
+import { studentsService } from '@/services/api/studentsService';
 
 export default function Students() {
-  const [students, setStudents] = useState<Student[]>(initialStudents);
+  const { 
+    students, 
+    isLoading, 
+    error, 
+    fetchStudents,
+    addStudent: addStudentToStore,
+    deleteStudent: deleteStudentFromStore,
+    setError
+  } = useStudentsStore();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const { toast } = useToast();
   const itemsPerPage = 10;
 
+  // Fetch students on component mount
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
   const filteredStudents = students.filter(student => 
-    `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase())
+    student.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.level.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const pageCount = Math.ceil(filteredStudents.length / itemsPerPage);
@@ -114,27 +55,91 @@ export default function Students() {
     currentPage * itemsPerPage
   );
 
-  const handleDeleteStudent = (studentId: string) => {
-    setStudents(students.filter(student => student.id !== studentId));
-    toast({
-      title: "Student Deleted",
-      description: "The student has been removed from the system.",
-    });
+  const handleDeleteStudent = async (studentId: string) => {
+    try {
+      await studentsService.deleteStudent(studentId);
+      deleteStudentFromStore(studentId);
+      toast({
+        title: "Student Deleted",
+        description: "The student has been removed from the system.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete student');
+      toast({
+        title: "Error",
+        description: "Failed to delete student. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleAddStudent = (newStudent: any) => {
-    const studentWithId = {
-      ...newStudent,
-      id: `${students.length + 1}`,
-      avatar: '/placeholder.svg',
-    }; 
-    
-    setStudents([...students, studentWithId]);
-    toast({
-      title: "Student Added Successfully!",
-      description: "The student has been added to the system.",
-    });
+  const handleAddStudent = async (newStudent: any) => {
+    try {
+      const response = await studentsService.addStudent({
+        name: `${newStudent.firstName} ${newStudent.lastName}`,
+        email: newStudent.email,
+        registrationNumber: newStudent.registrationNumber,
+        course: newStudent.course,
+        level: newStudent.level || '100',
+      });
+      
+      // Add to store with the id from the response
+      if (response && response.data && response.data.data && response.data.data[0]) {
+        const addedStudent = response.data.data[0];
+        addStudentToStore({
+          id: addedStudent._id,
+          firstName: newStudent.firstName,
+          lastName: newStudent.lastName,
+          fullName: addedStudent.name,
+          email: newStudent.email,
+          registrationNumber: addedStudent.regNo.toString(),
+          course: newStudent.course,
+          level: addedStudent.level,
+          admissionYear: addedStudent.addmissionYear || new Date().getFullYear().toString(),
+          avatar: '/placeholder.svg'
+        });
+      }
+      
+      toast({
+        title: "Student Added Successfully!",
+        description: "The student has been added to the system.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to add student');
+      toast({
+        title: "Error",
+        description: "Failed to add student. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-[70vh]">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+          <span className="ml-2 text-blue-500">Loading students...</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[70vh]">
+          <p className="text-red-500 mb-4">Error loading students: {error}</p>
+          <Button 
+            onClick={() => fetchStudents()}
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -175,39 +180,49 @@ export default function Students() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Registration Number</TableHead>
-                <TableHead>Course Enrolled</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>Admission Year</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <img src={student.avatar} alt={`${student.firstName} ${student.lastName}`} className="object-cover" />
-                      </Avatar>
-                      <span>{student.firstName} {student.lastName}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.email}</TableCell>
-                  <TableCell>{student.registrationNumber}</TableCell>
-                  <TableCell>{student.course}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <button className="text-yellow-500 hover:text-yellow-600">
-                        <Eye size={16} />
-                      </button>
-                      <button 
-                        className="text-red-500 hover:text-red-600"
-                        onClick={() => handleDeleteStudent(student.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              {paginatedStudents.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-gray-500">
+                    No students found. Please add a new student.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                paginatedStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <img src={student.avatar} alt={student.fullName} className="object-cover" />
+                        </Avatar>
+                        <span>{student.fullName}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{student.email}</TableCell>
+                    <TableCell>{student.registrationNumber}</TableCell>
+                    <TableCell>{student.level}</TableCell>
+                    <TableCell>{student.admissionYear}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <button className="text-yellow-500 hover:text-yellow-600">
+                          <Eye size={16} />
+                        </button>
+                        <button 
+                          className="text-red-500 hover:text-red-600"
+                          onClick={() => handleDeleteStudent(student.id)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
 

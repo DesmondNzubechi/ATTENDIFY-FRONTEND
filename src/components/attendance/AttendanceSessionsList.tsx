@@ -2,6 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAttendanceStore, AttendanceSession } from '@/stores/useAttendanceStore';
+import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from 'date-fns';
 
 interface AttendanceSessionsListProps {
   filteredSessions: AttendanceSession[];
@@ -9,6 +11,24 @@ interface AttendanceSessionsListProps {
 
 export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsListProps) => {
   const { selectedSession, setSelectedSession } = useAttendanceStore();
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch (error) {
+      return dateString; // Return the original string if parsing fails
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'date unknown';
+    }
+  };
 
   return (
     <Card className="lg:col-span-4">
@@ -28,18 +48,23 @@ export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsL
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium">{session.course}</h3>
+                    <h3 className="font-medium">{session.course} ({session.courseCode})</h3>
                     <p className="text-sm text-gray-500">Level: {session.level} | {session.sessionName}</p>
-                    <p className="text-xs text-gray-400">Date: {new Date(session.date).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-400">
+                      Date: {formatDate(session.date)} ({getTimeAgo(session.date)})
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Semester: {session.semester}
+                    </p>
                   </div>
                   {session.isActive ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
                       Active
-                    </span>
+                    </Badge>
                   ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Completed
-                    </span>
+                    <Badge variant="outline" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                      Inactive
+                    </Badge>
                   )}
                 </div>
               </div>

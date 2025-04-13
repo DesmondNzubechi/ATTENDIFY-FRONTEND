@@ -1,5 +1,6 @@
 
 import { apiClient } from "./apiClient";
+import { ApiResponse, BackendAttendance, AttendanceStatus } from "@/types/api";
 
 export interface AttendanceRecord {
   id: string;
@@ -32,53 +33,53 @@ export interface AttendanceSession {
 }
 
 export const attendanceService = {
-  getAllAttendance: async () => {
+  getAllAttendance: async (): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/fetchAllAttendance");
   },
    
-  getAttendanceBySession: async (sessionId: string) => {
+  getAttendanceBySession: async (sessionId: string): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/fetchAttendanceBySession/${sessionId}`);
   },
   
-  createAttendance: async (attendanceData: any) => {
+  createAttendance: async (attendanceData: any): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/createAttendance", {
       method: "POST",
       body: attendanceData
     });
   },
   
-  activateAttendance: async (attendanceId: string) => {
+  activateAttendance: async (attendanceId: string): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/activateAttendance/${attendanceId}`, {
       method: "PATCH"
     });
   },
   
-  deactivateAttendance: async (attendanceId: string) => {
+  deactivateAttendance: async (attendanceId: string): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/deactivateAttendance/${attendanceId}`, {
       method: "PATCH"
     });
   },
   
-  markAttendance: async (attendanceId: string, data: any) => {
+  markAttendance: async (attendanceId: string, data: any): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/markAttendance/${attendanceId}`, {
       method: "PATCH",
       body: data
     });
   },
   
-  markAbsent: async (attendanceId: string) => {
+  markAbsent: async (attendanceId: string): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/markAbsent/${attendanceId}`, {
       method: "PATCH"
     });
   },
   
-  deleteAttendance: async (attendanceId: string) => {
+  deleteAttendance: async (attendanceId: string): Promise<ApiResponse<any>> => {
     return await apiClient(`/api/v1/attendance/deleteAttendance/${attendanceId}`, {
       method: "DELETE"
     });
   },
   
-  deleteAllAttendance: async () => {
+  deleteAllAttendance: async (): Promise<ApiResponse<any>> => {
     return await apiClient("/api/v1/attendance/deleteAllAttendance", {
       method: "DELETE"
     });

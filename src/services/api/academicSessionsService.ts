@@ -1,5 +1,6 @@
 
 import { apiClient } from "./apiClient";
+import { ApiResponse, BackendAcademicSession } from "@/types/api";
 
 export interface AcademicSession {
   id: string;
@@ -9,28 +10,28 @@ export interface AcademicSession {
 }
 
 export const academicSessionsService = {
-  getAllSessions: async () => {
+  getAllSessions: async (): Promise<ApiResponse<BackendAcademicSession>> => {
     return await apiClient("/api/v1/acedmicSession/fetchallAcdemicSession");
   },
   
-  getSessionById: async (id: string) => {
+  getSessionById: async (id: string): Promise<ApiResponse<BackendAcademicSession>> => {
     return await apiClient(`/api/v1/acedmicSession/fetchAcedemicSessionByID/${id}`);
   },
   
-  createSession: async (sessionData: Omit<AcademicSession, "id">) => {
+  createSession: async (sessionData: Omit<AcademicSession, "id">): Promise<ApiResponse<BackendAcademicSession>> => {
     return await apiClient("/api/v1/acedmicSession/createAcedemicSession", {
       method: "POST",
       body: sessionData
     });
   },
   
-  deleteSession: async (id: string) => {
+  deleteSession: async (id: string): Promise<ApiResponse<any>> => {
     return await apiClient(`/api/v1/acedmicSession/deleteAcedemicSession/${id}`, {
       method: "DELETE"
     });
   },
   
-  deleteAllSessions: async () => {
+  deleteAllSessions: async (): Promise<ApiResponse<any>> => {
     return await apiClient("/api/v1/acedmicSession/deleteAllAcedemicSessions", {
       method: "DELETE"
     });

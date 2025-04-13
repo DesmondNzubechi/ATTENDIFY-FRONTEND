@@ -1,5 +1,7 @@
 
 import { create } from 'zustand';
+import { BackendAttendance, StudentAttendance } from '@/types/api';
+import { attendanceService } from '@/services/api/attendanceService';
 
 export type AttendanceStudent = {
   id: string;
@@ -11,10 +13,12 @@ export type AttendanceStudent = {
 export type AttendanceSession = {
   id: string;
   course: string;
+  courseCode: string;
   level: string;
   sessionName: string;
   date: string;
   isActive: boolean;
+  semester: string;
   students: AttendanceStudent[];
 };
 
@@ -23,6 +27,7 @@ type AttendanceState = {
   selectedSession: AttendanceSession | null;
   isLoading: boolean;
   error: string | null;
+  fetchAttendance: () => Promise<void>;
   setSessions: (sessions: AttendanceSession[]) => void;
   setSelectedSession: (session: AttendanceSession | null) => void;
   addSession: (session: AttendanceSession) => void;
@@ -37,6 +42,57 @@ export const useAttendanceStore = create<AttendanceState>((set) => ({
   selectedSession: null,
   isLoading: false,
   error: null,
+  fetchAttendance: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await attendanceService.getAllAttendance();
+      
+      if (response && response.data && response.data.data) {
+        const formattedSessions: AttendanceSession[] = response.data.data.map((attendance: BackendAttendance) => {
+          // Format students data
+          const formattedStudents: AttendanceStudent[] = attendance.students.map((student: StudentAttendance) => {
+            // Create attendance record for each student
+            const attendanceRecord: Record<string, { status: 'present' | 'absent' | 'not-marked', time?: string }> = {};
+            
+            student.attendanceStatus.forEach(status => {
+              const date = new Date(status.date).toISOString().split('T')[0];
+              const time = new Date(status.date).toLocaleTimeString();
+              attendanceRecord[date] = { 
+                status: status.status as 'present' | 'absent', 
+                time 
+              };
+            });
+            
+            return {
+              id: student.studentId,
+              name: student.name,
+              registrationNumber: student.regNo,
+              attendance: attendanceRecord
+            };
+          });
+          
+          return {
+            id: attendance._id,
+            course: attendance.course.courseTitle,
+            courseCode: attendance.course.courseCode,
+            level: attendance.level,
+            sessionName: attendance.acedemicSession.name,
+            date: attendance.createdAt,
+            isActive: attendance.active,
+            semester: attendance.semester,
+            students: formattedStudents
+          };
+        });
+        
+        set({ sessions: formattedSessions });
+      }
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch attendance' });
+      console.error('Error fetching attendance:', error);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
   setSessions: (sessions) => set({ sessions }),
   setSelectedSession: (session) => set({ selectedSession: session }),
   addSession: (session) => set((state) => ({ 

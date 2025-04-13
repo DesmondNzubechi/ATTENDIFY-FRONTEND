@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,58 +15,89 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddCourseDialog } from '@/components/dashboard/AddCourseDialog';
-import { coursesService, Course } from '@/services/api/coursesService';
+import { useCoursesStore } from '@/stores/useCoursesStore';
+import { coursesService } from '@/services/api/coursesService';
 
 export default function Courses() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { 
+    courses, 
+    isLoading, 
+    error, 
+    fetchCourses,
+    addCourse: addCourseToStore,
+    deleteCourse: deleteCourseFromStore,
+    setError
+  } = useCoursesStore();
+  
   const itemsPerPage = 10;
 
-  // Fetch courses
-  const { data: courses = [], isLoading, isError } = useQuery({
-    queryKey: ['courses'],
-    queryFn: coursesService.getAllCourses
-  });
- 
-  // Delete course mutation
-  const deleteMutation = useMutation({
-    mutationFn: coursesService.deleteCourse,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      await coursesService.deleteCourse(courseId);
+      deleteCourseFromStore(courseId);
       toast({
         title: "Course Deleted",
         description: "The course has been removed from the system.",
       });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete course');
+      toast({
+        title: "Error",
+        description: "Failed to delete course. Please try again.",
+        variant: "destructive"
+      });
     }
-  });
+  };
 
-  // Add course mutation
-  const addMutation = useMutation({
-    mutationFn: coursesService.addCourse,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
+  const handleAddCourse = async (newCourse: any) => {
+    try {
+      const response = await coursesService.addCourse({
+        courseName: newCourse.name,
+        courseCode: newCourse.code,
+        description: newCourse.description,
+        level: newCourse.level,
+        semester: newCourse.semester
+      });
+      
+      // Add to store with the id from the response
+      if (response && response.data && response.data.data && response.data.data[0]) {
+        const addedCourse = response.data.data[0];
+        addCourseToStore({
+          id: addedCourse._id,
+          courseName: addedCourse.courseTitle,
+          courseCode: addedCourse.courseCode,
+          description: `${addedCourse.courseTitle} - ${addedCourse.semester}`,
+          level: addedCourse.level,
+          semester: addedCourse.semester
+        });
+      }
+      
       toast({
         title: "Course Added",
         description: "The course has been added successfully.",
       });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to add course');
+      toast({
+        title: "Error",
+        description: "Failed to add course. Please try again.",
+        variant: "destructive"
+      });
     }
-  });
-
-  const handleDeleteCourse = (courseId: string) => {
-    deleteMutation.mutate(courseId);
   };
 
-  const handleAddCourse = (newCourse: any) => {
-    addMutation.mutate(newCourse);
-  };
-
-  const filteredCourses = courses?.filter((course: Course) => 
-    course?.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course?.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (course?.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredCourses = courses.filter((course) => 
+    course.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (course.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const pageCount = Math.ceil(filteredCourses.length / itemsPerPage);
@@ -76,13 +106,24 @@ export default function Courses() {
     currentPage * itemsPerPage
   );
 
-  if (isError) {
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-[70vh]">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+          <span className="ml-2 text-blue-500">Loading courses...</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-[70vh]">
-          <p className="text-red-500 mb-4">Error loading courses</p>
+          <p className="text-red-500 mb-4">Error loading courses: {error}</p>
           <Button 
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['courses'] })}
+            onClick={() => fetchCourses()}
             variant="outline"
           >
             Try Again
@@ -125,93 +166,86 @@ export default function Courses() {
           <CardTitle>Course List</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-10">
-              <Loader2 className="h-10 w-10 animate-spin text-gray-400" />
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Course Name</TableHead>
-                    <TableHead>Course Code</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Course Name</TableHead>
+                <TableHead>Course Code</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>Semester</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedCourses.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-10 text-gray-500">
+                    No courses found. Please add a new course.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedCourses.map((course) => (
+                  <TableRow key={course.id}>
+                    <TableCell>{course.courseName}</TableCell>
+                    <TableCell>{course.courseCode}</TableCell>
+                    <TableCell>{course.level || 'Not specified'}</TableCell>
+                    <TableCell>{course.semester || 'Not specified'}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <button className="text-blue-500 hover:text-blue-600">
+                          <Eye size={16} />
+                        </button>
+                        <button className="text-yellow-500 hover:text-yellow-600">
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="text-red-500 hover:text-red-600"
+                          onClick={() => handleDeleteCourse(course.id)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedCourses.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-10 text-gray-500">
-                        No courses found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedCourses?.map((course: Course) => (
-                      <TableRow key={course.id}>
-                        <TableCell>{course.courseName}</TableCell>
-                        <TableCell>{course.courseCode}</TableCell>
-                        <TableCell className="max-w-xs truncate">{course.description}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <button className="text-blue-500 hover:text-blue-600">
-                              <Eye size={16} />
-                            </button>
-                            <button className="text-yellow-500 hover:text-yellow-600">
-                              <Edit size={16} />
-                            </button>
-                            <button 
-                              className="text-red-500 hover:text-red-600"
-                              onClick={() => handleDeleteCourse(course.id)}
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-
-              {pageCount > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-500">
-                    {filteredCourses.length} Results
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      &lt;
-                    </Button>
-                    {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                      <Button 
-                        key={page}
-                        variant={page === currentPage ? "default" : "outline"} 
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                      >
-                        {page}
-                      </Button>
-                    ))}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                      disabled={currentPage === pageCount}
-                    >
-                      &gt;
-                    </Button>
-                  </div>
-                </div>
+                ))
               )}
-            </>
+            </TableBody>
+          </Table>
+
+          {pageCount > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-500">
+                {filteredCourses.length} Results
+              </div>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  &lt;
+                </Button>
+                {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                  <Button 
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                ))}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                  disabled={currentPage === pageCount}
+                >
+                  &gt;
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
