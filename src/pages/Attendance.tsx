@@ -191,7 +191,7 @@ export default function Attendance() {
               {filteredSessions.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">No attendance sessions found.</p>
               ) : (
-                filteredSessions.map((session: AttendanceSession) => (
+                filteredSessions?.map((session: AttendanceSession) => (
                   <div 
                     key={session.id} 
                     className={`p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${selectedSession?.id === session.id ? 'border-blue-500 bg-blue-50' : ''}`}
@@ -257,7 +257,7 @@ export default function Attendance() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {selectedSession.students.map((student, index) => {
+                  {selectedSession?.students?.map((student, index) => {
                     const today = new Date().toISOString().split('T')[0];
                     const attendanceToday = student.attendance[today] || { status: 'not-marked' };
                     

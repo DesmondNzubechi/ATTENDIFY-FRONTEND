@@ -35,7 +35,7 @@ export const attendanceService = {
   getAllAttendance: async () => {
     return await apiClient("/api/v1/attendance/fetchAllAttendance");
   },
-  
+   
   getAttendanceBySession: async (sessionId: string) => {
     return await apiClient(`/api/v1/attendance/fetchAttendanceBySession/${sessionId}`);
   },

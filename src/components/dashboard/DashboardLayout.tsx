@@ -8,7 +8,7 @@ import { PrivateRoute } from '@/components/auth/PrivateRoute';
 type DashboardLayoutProps = {
   children: React.ReactNode;
 };
-
+ 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const isMobile = useIsMobile();
   
