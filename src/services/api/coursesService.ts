@@ -22,7 +22,7 @@ export const coursesService = {
   getCoursesBySemester: async (semester: string) => {
     return await apiClient(`/api/v1/course/fetchCoursesBySemester/${semester}`);
   },
-  
+   
   addCourse: async (courseData: Omit<Course, "id">) => {
     return await apiClient("/api/v1/course/addANewCourse", {
       method: "POST",

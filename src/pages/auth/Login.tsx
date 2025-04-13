@@ -41,7 +41,7 @@ export default function Login() {
       setIsSubmitting(true); 
       await login({email, password});
       navigate('/');
-    } catch (error) {
+    } catch (error) { 
       // Error is handled in the auth context
     } finally {
       setIsSubmitting(false);

@@ -26,7 +26,7 @@ type Student = {
   course: string;
   avatar: string;
 };
-
+ 
 const initialStudents: Student[] = [
   {
     id: '1',
@@ -127,7 +127,7 @@ export default function Students() {
       ...newStudent,
       id: `${students.length + 1}`,
       avatar: '/placeholder.svg',
-    };
+    }; 
     
     setStudents([...students, studentWithId]);
     toast({

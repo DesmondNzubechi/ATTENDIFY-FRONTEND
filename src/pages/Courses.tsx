@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Table,
   TableBody,
-  TableCell,
+  TableCell, 
   TableHead,
   TableHeader,
   TableRow,
@@ -31,7 +31,7 @@ export default function Courses() {
     queryKey: ['courses'],
     queryFn: coursesService.getAllCourses
   });
-
+ 
   // Delete course mutation
   const deleteMutation = useMutation({
     mutationFn: coursesService.deleteCourse,
@@ -64,10 +64,10 @@ export default function Courses() {
     addMutation.mutate(newCourse);
   };
 
-  const filteredCourses = courses.filter((course: Course) => 
-    course.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (course.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredCourses = courses?.filter((course: Course) => 
+    course?.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course?.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (course?.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const pageCount = Math.ceil(filteredCourses.length / itemsPerPage);
@@ -148,7 +148,7 @@ export default function Courses() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedCourses.map((course: Course) => (
+                    paginatedCourses?.map((course: Course) => (
                       <TableRow key={course.id}>
                         <TableCell>{course.courseName}</TableCell>
                         <TableCell>{course.courseCode}</TableCell>

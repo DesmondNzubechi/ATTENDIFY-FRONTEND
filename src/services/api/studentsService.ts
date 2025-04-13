@@ -17,7 +17,7 @@ export const studentsService = {
   getAllStudents: async () => {
     return await apiClient("/api/v1/student/fetchAllTheStudents");
   },
-  
+   
   getStudentById: async (id: string) => {
     return await apiClient(`/api/v1/student/fetchStudentByID/${id}`);
   },
