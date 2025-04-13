@@ -18,7 +18,7 @@ const getJwtFromCookie = (): string | null => {
 };
 
 export const apiClient = async (endpoint: string, options: RequestOptions = {}) => {
-  const baseUrl = import.meta.env.VITE_API_URL || 'https://api.example.com';
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

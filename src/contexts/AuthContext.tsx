@@ -6,7 +6,7 @@ import { useUserStore } from "@/stores/useUserStore";
 type AuthContextType = {
   currentUser: any;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<any>;
+  login: (credentials: any) => Promise<any>;
   register: (userData: any) => Promise<any>;
   logout: () => void;
 };
@@ -37,8 +37,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (credentials: any) => {
     try { 
       setLoading(true);
-      const response = await authService.login(email, password);
-      setUser(response.user);
+      const response = await authService.login(credentials);
+      setUser(response?.data?.user);
       return response;
     } finally {
       setLoading(false);
