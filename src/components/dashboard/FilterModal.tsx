@@ -31,6 +31,7 @@ export function FilterModal({
 }: FilterModalProps) {
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>(options);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeGroup, setActiveGroup] = useState<string | null>(groups.length > 0 ? groups[0] : null);
 
   const handleCheckboxChange = (id: string) => {
     setFilterOptions(
@@ -46,7 +47,8 @@ export function FilterModal({
   };
 
   const filteredOptions = filterOptions.filter((option) =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase())
+    option.label.toLowerCase().includes(searchQuery.toLowerCase()) && 
+    (!activeGroup || !option.group || option.group === activeGroup)
   );
 
   return (
@@ -64,12 +66,13 @@ export function FilterModal({
           />
 
           {groups.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {groups.map((group) => (
                 <Button
                   key={group}
                   variant="outline"
-                  className={group === 'Faculty' ? 'bg-blue-500 text-white' : ''}
+                  className={activeGroup === group ? 'bg-blue-500 text-white' : ''}
+                  onClick={() => setActiveGroup(group)}
                 >
                   {group}
                 </Button>

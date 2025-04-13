@@ -261,8 +261,16 @@ export default function Attendance() {
                     const today = new Date().toISOString().split('T')[0];
                     const attendanceToday = student.attendance[today] || { status: 'not-marked' };
                     
+                    // Set background colors based on attendance status
+                    let bgColorClass = '';
+                    if (attendanceToday.status === 'present') {
+                      bgColorClass = 'bg-[#F2FCE2]'; // Soft green for present
+                    } else if (attendanceToday.status === 'absent') {
+                      bgColorClass = 'bg-[#ea384c]/10'; // Light red for absent
+                    }
+                    
                     return (
-                      <TableRow key={student.id} className="border-b">
+                      <TableRow key={student.id} className={`border-b ${bgColorClass}`}>
                         <TableCell className="text-center font-medium border-r">{index + 1}</TableCell>
                         <TableCell className="border-r">{student.name}</TableCell>
                         <TableCell className="border-r">{student.registrationNumber}</TableCell>
@@ -273,7 +281,7 @@ export default function Attendance() {
                               Present {attendanceToday.time && `at ${attendanceToday.time}`}
                             </span>
                           ) : attendanceToday.status === 'absent' ? (
-                            <span className="flex items-center text-red-600">
+                            <span className="flex items-center text-[#ea384c]">
                               <XCircle size={16} className="mr-1" />
                               Absent
                             </span>
@@ -297,7 +305,7 @@ export default function Attendance() {
                               </Button>
                               <Button 
                                 size="sm" 
-                                className="h-8 px-2 bg-red-500 hover:bg-red-600 text-white"
+                                className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
                                 onClick={() => handleMarkAttendance(student.id, 'absent')}
                                 disabled={attendanceToday.status === 'absent' || markAttendanceMutation.isPending}
                               >
