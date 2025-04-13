@@ -55,45 +55,60 @@ export const StoreInitializer = () => {
         id: '1',
         firstName: 'Elizabeth',
         lastName: 'Alan',
+        fullName: 'Elizabeth Alan',
         email: 'elizabeth@gmail.com',
         registrationNumber: 'P7345H3234',
         course: 'Medicine & Surgery',
+        level: '100',
+        admissionYear: '2023',
         avatar: '/placeholder.svg'
       },
       {
         id: '2',
         firstName: 'Desmond',
         lastName: 'Nyeko',
+        fullName: 'Desmond Nyeko',
         email: 'desmond@gmail.com',
         registrationNumber: 'P7346H3234',
         course: 'Law',
+        level: '200',
+        admissionYear: '2022',
         avatar: '/placeholder.svg'
       },
       {
         id: '3',
         firstName: 'Cedar',
         lastName: 'James',
+        fullName: 'Cedar James',
         email: 'cedar@gmail.com',
         registrationNumber: 'P7346H3224',
         course: 'Engineering',
+        level: '300',
+        admissionYear: '2021',
         avatar: '/placeholder.svg'
       },
       {
         id: '4',
         firstName: 'Sophie',
         lastName: 'Garcia',
+        fullName: 'Sophie Garcia',
         email: 'sophie@gmail.com',
         registrationNumber: 'P7347H3234',
         course: 'Computer Science',
+        level: '100',
+        admissionYear: '2023',
         avatar: '/placeholder.svg'
       },
       {
         id: '5',
         firstName: 'Michael',
         lastName: 'Wong',
+        fullName: 'Michael Wong',
         email: 'michael@gmail.com',
         registrationNumber: 'P7348H3234',
         course: 'Business Administration',
+        level: '400',
+        admissionYear: '2020',
         avatar: '/placeholder.svg'
       }
     ]);
@@ -132,19 +147,25 @@ export const StoreInitializer = () => {
         id: '1',
         sessionName: '2023/2024',
         startDate: '2023-09-01',
-        endDate: '2024-07-31'
+        endDate: '2024-07-31',
+        semesters: ['first semester', 'second semester'],
+        isActive: true
       },
       {
         id: '2',
         sessionName: '2024/2025',
         startDate: '2024-09-01',
-        endDate: '2025-07-31'
+        endDate: '2025-07-31',
+        semesters: ['first semester', 'second semester'],
+        isActive: false
       },
       {
         id: '3',
         sessionName: '2022/2023',
         startDate: '2022-09-01',
-        endDate: '2023-07-31'
+        endDate: '2023-07-31',
+        semesters: ['first semester', 'second semester'],
+        isActive: false
       }
     ]);
 
@@ -155,11 +176,13 @@ export const StoreInitializer = () => {
     const mockAttendanceSessions: AttendanceSession[] = [
       {
         id: '1',
-        course: 'Introduction to Computer Science (CSC101)',
+        course: 'Introduction to Computer Science',
+        courseCode: 'CSC101',
         level: '100',
         sessionName: '2023/2024',
         date: today,
         isActive: true,
+        semester: 'first semester',
         students: [
           {
             id: '1',
@@ -205,11 +228,13 @@ export const StoreInitializer = () => {
       },
       {
         id: '2',
-        course: 'Data Structures and Algorithms (CSC201)',
+        course: 'Data Structures and Algorithms',
+        courseCode: 'CSC201',
         level: '200',
         sessionName: '2023/2024',
         date: yesterday,
         isActive: false,
+        semester: 'first semester',
         students: [
           {
             id: '1',
@@ -255,11 +280,13 @@ export const StoreInitializer = () => {
       },
       {
         id: '3',
-        course: 'Advanced Calculus (MTH301)',
+        course: 'Advanced Calculus',
+        courseCode: 'MTH301',
         level: '300',
         sessionName: '2023/2024',
         date: new Date(Date.now() - 172800000).toISOString().split('T')[0], // 2 days ago
         isActive: false,
+        semester: 'second semester',
         students: [
           {
             id: '1',

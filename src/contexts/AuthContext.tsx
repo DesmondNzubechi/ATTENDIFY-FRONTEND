@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "@/services/api/authService";
 import { useUserStore } from "@/stores/useUserStore";
@@ -13,7 +14,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { currentUser, isLoading, setUser, setLoading, setError, logout, setIsAuthenticated } = useUserStore();
+  const { currentUser, isLoading, setUser, setLoading, setError, logout } = useUserStore();
 
   useEffect(() => {
     checkAuthStatus();
@@ -24,13 +25,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       const userData = await authService.getCurrentUser();
       setUser(userData);
-      setIsAuthenticated(true);
     } catch (error) {
       console.error('Authentication check failed:', error);
       setUser(null);
-      setIsAuthenticated(false);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 

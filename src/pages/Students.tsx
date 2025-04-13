@@ -75,7 +75,7 @@ export default function Students() {
 
   const handleAddStudent = async (newStudent: any) => {
     try {
-      const response = await studentsService.addStudent({
+      const response = await studentsService.createStudent({
         name: `${newStudent.firstName} ${newStudent.lastName}`,
         email: newStudent.email,
         registrationNumber: newStudent.registrationNumber,
