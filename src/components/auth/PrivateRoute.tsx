@@ -1,13 +1,13 @@
 
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserStore } from "@/stores/useUserStore";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
 export const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { currentUser, isLoading } = useAuth();
+  const { currentUser, isLoading } = useUserStore();
   const location = useLocation();
   
   if (isLoading) {
