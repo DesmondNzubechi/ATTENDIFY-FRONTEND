@@ -15,8 +15,8 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData extends LoginCredentials {
-  firstName: string;
-  lastName: string;
+  fullName: string;
+  confirmPassword: string;
 }
 
 export const authService = {
@@ -32,7 +32,7 @@ export const authService = {
     
     return response;
   },
-  
+   
   register: async (userData: RegisterData) => {
     return await apiClient("/api/v1/auth/register", {
       method: "POST",

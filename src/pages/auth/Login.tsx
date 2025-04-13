@@ -38,16 +38,16 @@ export default function Login() {
     }
     
     try {
-      setIsSubmitting(true);
-      await login(email, password);
-      navigate(from, { replace: true });
+      setIsSubmitting(true); 
+      await login({email, password});
+      navigate('/');
     } catch (error) {
       // Error is handled in the auth context
     } finally {
       setIsSubmitting(false);
     }
   };
-
+ 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-md">

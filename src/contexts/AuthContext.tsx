@@ -33,11 +33,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuthStatus();
   }, [setUser, setLoading]);
 
-  const login = async (email: string, password: string) => {
-    try {
+  const login = async (credentials: any) => {
+    try { 
       setLoading(true);
-      const response = await authService.login(email, password);
-      setUser(response.user);
+      const response = await authService.login(credentials);
+      console.log("the response of sign up", response);
+      setUser(response?.data?.user);
       return response;
     } finally {
       setLoading(false);
@@ -48,7 +49,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       const response = await authService.register(userData);
-      setUser(response.user);
+      console.log("the response of sign up", response);
+     // setUser(response.user);
       return response;
     } finally {
       setLoading(false);

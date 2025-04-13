@@ -9,8 +9,8 @@ import { UserPlus, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Register() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+ // const [firstName, setFirstName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,7 +22,7 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!fullName || !email || !password || !confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -39,17 +39,17 @@ export default function Register() {
       });
       return;
     }
-    
+     
     try {
       setIsSubmitting(true);
-      await register({ firstName, lastName, email, password });
+      await register({fullName, email, password, confirmPassword });
       navigate('/login');
     } catch (error) {
       // Error is handled in the auth context
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }; 
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
@@ -62,8 +62,8 @@ export default function Register() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid  gap-4">
+              {/* <div className="space-y-2">
                 <label htmlFor="firstName" className="text-sm font-medium">First Name</label>
                 <Input
                   id="firstName"
@@ -72,14 +72,14 @@ export default function Register() {
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                 />
-              </div>
+              </div> */}
               <div className="space-y-2">
-                <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
+                <label htmlFor="fullName" className="text-sm font-medium">Fullname</label>
                 <Input
-                  id="lastName"
-                  placeholder="Doe"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  id="fullName"
+                  placeholder="Desmond nzubechukwu"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   required
                 />
               </div>
