@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { StoreInitializer } from "./providers/StoreInitializer";
 import Index from "./pages/Index";
 import Overview from "./pages/Overview";
 import Lecturers from "./pages/Lecturers";
@@ -32,6 +33,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <StoreInitializer />
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

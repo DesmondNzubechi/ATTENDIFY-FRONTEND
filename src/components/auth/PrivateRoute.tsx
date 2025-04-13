@@ -14,7 +14,7 @@ export const PrivateRoute = ({ children }: PrivateRouteProps) => {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 
-  if (currentUser) {
+  if (!currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

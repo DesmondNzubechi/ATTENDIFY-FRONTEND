@@ -1,85 +1,67 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, User } from '@/services/api/authService';
-import { useToast } from '@/hooks/use-toast';
+import React, { createContext, useContext, useEffect } from 'react';
+import { authService } from '@/services/api/authService';
+import { useUserStore } from '@/stores/useUserStore';
 
 interface AuthContextType {
-  currentUser: User | null;
+  currentUser: any | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: { email: string; password: string; firstName: string; lastName: string }) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
+  register: (userData: any) => Promise<any>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { currentUser, isLoading, setUser, setLoading, logout: clearUser } = useUserStore();
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const checkAuthStatus = async () => {
       try {
-        if (localStorage.getItem('auth_token')) {
-          const userData = await authService.getCurrentUser();
-          setCurrentUser(userData);
-        }
+        setLoading(true);
+        const response = await authService.getCurrentUser();
+        setUser(response.user);
       } catch (error) {
-        // Token might be invalid or expired
-        localStorage.removeItem('auth_token');
+        console.error('Authentication check failed:', error);
+        setUser(null);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchCurrentUser();
-  }, []);
+    checkAuthStatus();
+  }, [setUser, setLoading]);
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
-      const userData = await authService.login({ email, password });
-      setCurrentUser(userData.user);
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!"
-      });
-    } catch (error) {
-      throw error;
+      setLoading(true);
+      const response = await authService.login(email, password);
+      setUser(response.user);
+      return response;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const register = async (userData: { email: string; password: string; firstName: string; lastName: string }) => {
+  const register = async (userData: any) => {
     try {
-      setIsLoading(true);
-      await authService.register(userData);
-      toast({
-        title: "Registration Successful",
-        description: "You can now login to your account."
-      });
-    } catch (error) {
-      throw error;
+      setLoading(true);
+      const response = await authService.register(userData);
+      setUser(response.user);
+      return response;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       await authService.logout();
-      setCurrentUser(null);
-      toast({
-        title: "Logout Successful",
-        description: "You have been logged out."
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
+      clearUser();
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 

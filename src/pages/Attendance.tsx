@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,15 +16,22 @@ import {
 } from "@/components/ui/table";
 import { ActivateAttendanceDialog } from '@/components/dashboard/ActivateAttendanceDialog';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
-import { attendanceService, AttendanceSession } from '@/services/api/attendanceService';
+import { useAttendanceStore, AttendanceSession } from '@/stores/useAttendanceStore';
 
 export default function Attendance() {
+  const { toast } = useToast();
+  const { 
+    sessions, 
+    selectedSession, 
+    isLoading, 
+    setSelectedSession, 
+    markAttendance, 
+    addSession 
+  } = useAttendanceStore();
+  
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSession, setSelectedSession] = useState<AttendanceSession | null>(null);
   const [isActivateAttendanceOpen, setIsActivateAttendanceOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Setup filter options
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
@@ -39,67 +45,63 @@ export default function Attendance() {
     { id: 'status-inactive', label: 'Inactive Sessions', checked: false, group: 'Status' },
   ]);
 
-  // Fetch attendance sessions
-  const { data: attendanceSessions = [], isLoading } = useQuery({
-    queryKey: ['attendanceSessions'],
-    queryFn: attendanceService.getAllAttendance,
-  });
-
-  // Mark attendance mutation
-  const markAttendanceMutation = useMutation({
-    mutationFn: ({ attendanceId, data }: { attendanceId: string; data: any }) => 
-      attendanceService.markAttendance(attendanceId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendanceSessions'] });
-      toast({
-        title: "Attendance Marked",
-        description: "Student attendance has been updated successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to mark attendance",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Activate attendance mutation
-  const activateAttendanceMutation = useMutation({
-    mutationFn: attendanceService.createAttendance,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendanceSessions'] });
-      toast({
-        title: "Attendance Activated",
-        description: "Attendance session has been activated successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to activate attendance",
-        variant: "destructive",
-      });
-    }
-  });
-
   const handleActivateAttendance = (data: any) => {
-    activateAttendanceMutation.mutate(data);
+    // Generate a simple ID for the new session
+    const newSession = {
+      id: `${sessions.length + 1}`,
+      course: data.course,
+      level: data.level,
+      sessionName: data.session,
+      date: new Date().toISOString(),
+      isActive: true,
+      students: [
+        {
+          id: '1',
+          name: 'Elizabeth Alan',
+          registrationNumber: 'P7345H3234',
+          attendance: {}
+        },
+        {
+          id: '2',
+          name: 'Desmond Nyeko',
+          registrationNumber: 'P7346H3234',
+          attendance: {}
+        },
+        {
+          id: '3',
+          name: 'Cedar James',
+          registrationNumber: 'P7346H3224',
+          attendance: {}
+        },
+        {
+          id: '4',
+          name: 'Sophie Garcia',
+          registrationNumber: 'P7347H3234',
+          attendance: {}
+        },
+        {
+          id: '5',
+          name: 'Michael Wong',
+          registrationNumber: 'P7348H3234',
+          attendance: {}
+        }
+      ]
+    };
+    
+    addSession(newSession);
+    toast({
+      title: "Attendance Activated",
+      description: "Attendance session has been activated successfully.",
+    });
   };
 
   const handleMarkAttendance = (studentId: string, status: 'present' | 'absent') => {
     if (!selectedSession) return;
     
-    const data = {
-      studentId,
-      status,
-      date: new Date().toISOString().split('T')[0],
-    };
-    
-    markAttendanceMutation.mutate({ 
-      attendanceId: selectedSession.id, 
-      data
+    markAttendance(selectedSession.id, studentId, status);
+    toast({
+      title: "Attendance Marked",
+      description: "Student attendance has been updated successfully.",
     });
   };
 
@@ -111,7 +113,7 @@ export default function Attendance() {
   const filteredSessions = React.useMemo(() => {
     const activatedFilters = filterOptions.filter(filter => filter.checked);
     
-    return attendanceSessions.filter((session: AttendanceSession) => {
+    return sessions.filter((session) => {
       // Apply text search
       const matchesSearch = session.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           session.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -136,7 +138,7 @@ export default function Attendance() {
       
       return matchesSearch && matchesFilters;
     });
-  }, [attendanceSessions, searchQuery, filterOptions]);
+  }, [sessions, searchQuery, filterOptions]);
 
   if (isLoading) {
     return (
@@ -191,7 +193,7 @@ export default function Attendance() {
               {filteredSessions.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">No attendance sessions found.</p>
               ) : (
-                filteredSessions?.map((session: AttendanceSession) => (
+                filteredSessions?.map((session) => (
                   <div 
                     key={session.id} 
                     className={`p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${selectedSession?.id === session.id ? 'border-blue-500 bg-blue-50' : ''}`}
@@ -299,7 +301,7 @@ export default function Attendance() {
                                 size="sm" 
                                 className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
                                 onClick={() => handleMarkAttendance(student.id, 'present')}
-                                disabled={attendanceToday.status === 'present' || markAttendanceMutation.isPending}
+                                disabled={attendanceToday.status === 'present'}
                               >
                                 Present
                               </Button>
@@ -307,7 +309,7 @@ export default function Attendance() {
                                 size="sm" 
                                 className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
                                 onClick={() => handleMarkAttendance(student.id, 'absent')}
-                                disabled={attendanceToday.status === 'absent' || markAttendanceMutation.isPending}
+                                disabled={attendanceToday.status === 'absent'}
                               >
                                 Absent
                               </Button>
