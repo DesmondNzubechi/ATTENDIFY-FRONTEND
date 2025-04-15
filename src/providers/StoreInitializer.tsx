@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useCoursesStore } from "@/stores/useCoursesStore";
@@ -11,7 +10,7 @@ export const StoreInitializer = () => {
   const { setCourses } = useCoursesStore();
   const { setSessions: setAttendanceSessions } = useAttendanceStore();
   const { setStudents } = useStudentsStore();
-  const { setLecturers } = useLecturersStore();
+  const { lecturers, fetchAllLecturers } = useLecturersStore();
   const { setSessions: setAcademicSessions } = useAcademicSessionsStore();
 
   useEffect(() => {
@@ -113,33 +112,8 @@ export const StoreInitializer = () => {
       }
     ]);
 
-    // Initializing mock data for lecturers
-    setLecturers([
-      {
-        id: '1',
-        name: 'Dr. John Smith',
-        email: 'john.smith@university.edu',
-        faculty: 'Science',
-        department: 'Computer Science',
-        avatar: '/placeholder.svg'
-      },
-      {
-        id: '2',
-        name: 'Prof. Maria Rodriguez',
-        email: 'maria.rodriguez@university.edu',
-        faculty: 'Engineering',
-        department: 'Electrical Engineering',
-        avatar: '/placeholder.svg'
-      },
-      {
-        id: '3',
-        name: 'Dr. David Kim',
-        email: 'david.kim@university.edu',
-        faculty: 'Medicine',
-        department: 'Anatomy',
-        avatar: '/placeholder.svg'
-      }
-    ]);
+    // Instead of using setLecturers, use fetchAllLecturers to load lecturers from API
+    fetchAllLecturers();
 
     // Initializing mock data for academic sessions
     setAcademicSessions([

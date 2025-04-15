@@ -60,16 +60,14 @@ export default function Overview() {
   const { toast } = useToast();
 
   // Get data from stores
-  const { students: backendStudents, fetchAllStudents } = useStudentsStore();
-  const { courses, fetchAllCourses } = useCoursesStore();
+  const { students: backendStudents } = useStudentsStore();
+  const { courses } = useCoursesStore();
   const { lecturers, fetchAllLecturers } = useLecturersStore();
 
   // Fetch data on component mount
   useEffect(() => {
-    fetchAllStudents();
-    fetchAllCourses();
     fetchAllLecturers();
-  }, [fetchAllStudents, fetchAllCourses, fetchAllLecturers]);
+  }, [fetchAllLecturers]);
 
   const handleAddStudent = (newStudent: any) => {
     const studentWithId = {

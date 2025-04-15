@@ -25,6 +25,9 @@ const formSchema = z.object({
   }),
 });
 
+// Define the form values type based on the schema
+type FormValues = z.infer<typeof formSchema>;
+
 interface AddLecturerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,7 +42,7 @@ export function AddLecturerDialog({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -47,7 +50,7 @@ export function AddLecturerDialog({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
       await onLecturerAdded(values);
