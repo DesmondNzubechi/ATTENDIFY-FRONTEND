@@ -18,6 +18,17 @@ export interface BackendCourse {
   __v?: number;
 }
 
+// Lecturer Types
+export interface BackendLecturer {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: "lecturer" | "admin" | "user";
+  access: "pending" | "approved" | "rejected";
+  emailVerified: boolean;
+  __v?: number;
+}
+
 // Student Types
 export interface BackendStudent {
   _id: string;

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
@@ -10,6 +10,9 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Users, UserPlus, BookOpen, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useStudentsStore } from '@/stores/useStudentsStore';
+import { useCoursesStore } from '@/stores/useCoursesStore';
+import { useLecturersStore } from '@/stores/useLecturersStore';
 
 type Student = {
   id: string;
@@ -56,6 +59,18 @@ export default function Overview() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Get data from stores
+  const { students: backendStudents, fetchAllStudents } = useStudentsStore();
+  const { courses, fetchAllCourses } = useCoursesStore();
+  const { lecturers, fetchAllLecturers } = useLecturersStore();
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchAllStudents();
+    fetchAllCourses();
+    fetchAllLecturers();
+  }, [fetchAllStudents, fetchAllCourses, fetchAllLecturers]);
+
   const handleAddStudent = (newStudent: any) => {
     const studentWithId = {
       ...newStudent,
@@ -93,7 +108,7 @@ export default function Overview() {
         <StatCard 
           icon={<Users size={24} />} 
           title="All Students" 
-          value={students.length.toLocaleString()} 
+          value={backendStudents.length.toString()} 
           change={{ value: "2.5%", type: "increase" }}
           color="blue"
         />
@@ -107,13 +122,13 @@ export default function Overview() {
         <StatCard 
           icon={<BookOpen size={24} />} 
           title="Courses" 
-          value="24" 
+          value={courses.length.toString()} 
           color="orange"
         />
         <StatCard 
           icon={<GraduationCap size={24} />} 
           title="Lecturers" 
-          value="102" 
+          value={lecturers.length.toString()} 
           color="purple"
         />
       </div>
