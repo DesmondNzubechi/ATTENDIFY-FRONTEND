@@ -51,7 +51,10 @@ export function AddLecturerDialog({
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      await onLecturerAdded(values);
+      await onLecturerAdded({
+        fullName: values.fullName,
+        email: values.email
+      });
       form.reset();
       onOpenChange(false);
       toast({
