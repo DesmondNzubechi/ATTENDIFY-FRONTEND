@@ -35,9 +35,18 @@ type AttendanceState = {
   markAttendance: (sessionId: string, studentId: string, status: 'present' | 'absent') => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  activateSession: (sessionId: string) => Promise<void>;
+  deactivateSession: (sessionId: string) => Promise<void>;
+  deleteSession: (sessionId: string) => Promise<void>;
+  createAttendance: (data: {
+    courseId: string;
+    acedemicSessionId: string;
+    semester: string;
+    level: string;
+  }) => Promise<void>;
 };
 
-export const useAttendanceStore = create<AttendanceState>((set) => ({
+export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   sessions: [],
   selectedSession: null,
   isLoading: false,
@@ -160,4 +169,55 @@ export const useAttendanceStore = create<AttendanceState>((set) => ({
   }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+  
+  // New methods for attendance management
+  activateSession: async (sessionId) => {
+    const { updateSession, setError } = get();
+    try {
+      await attendanceService.activateAttendance(sessionId);
+      updateSession(sessionId, { isActive: true });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to activate session');
+      throw error;
+    }
+  },
+  
+  deactivateSession: async (sessionId) => {
+    const { updateSession, setError } = get();
+    try {
+      await attendanceService.deactivateAttendance(sessionId);
+      updateSession(sessionId, { isActive: false });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to deactivate session');
+      throw error;
+    }
+  },
+  
+  deleteSession: async (sessionId) => {
+    const { setError } = get();
+    try {
+      await attendanceService.deleteAttendance(sessionId);
+      set((state) => ({
+        sessions: state.sessions.filter(session => session.id !== sessionId),
+        selectedSession: state.selectedSession?.id === sessionId ? null : state.selectedSession
+      }));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete session');
+      throw error;
+    }
+  },
+  
+  createAttendance: async (data) => {
+    const { fetchAttendance, setError, setLoading } = get();
+    try {
+      setLoading(true);
+      await attendanceService.createAttendance(data);
+      await fetchAttendance(); // Refresh the attendance data
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to create attendance');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
 }));

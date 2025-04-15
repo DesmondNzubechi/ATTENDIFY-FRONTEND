@@ -12,7 +12,6 @@ import { AttendanceTable } from '@/components/attendance/AttendanceTable';
 import { useCoursesStore } from '@/stores/useCoursesStore';
 import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
 import { Button } from '@/components/ui/button';
-import { attendanceService } from '@/services/api/attendanceService';
 
 export default function Attendance() {
   const { toast } = useToast();
@@ -21,7 +20,7 @@ export default function Attendance() {
     isLoading, 
     error, 
     fetchAttendance, 
-    addSession,
+    createAttendance,
     setError
   } = useAttendanceStore();
 
@@ -71,20 +70,17 @@ export default function Attendance() {
       };
 
       // Call the API to create a new attendance session
-      const response = await attendanceService.createAttendance(attendanceData);
-      
-      // Refresh the attendance data after creating a new session
-      fetchAttendance();
+      await createAttendance(attendanceData);
       
       toast({
-        title: "Attendance Activated",
-        description: "Attendance session has been activated successfully.",
+        title: "Attendance Created",
+        description: "Attendance session has been created successfully.",
       });
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to activate attendance');
+      setError(error instanceof Error ? error.message : 'Failed to create attendance');
       toast({
         title: "Error",
-        description: "Failed to activate attendance. Please try again.",
+        description: "Failed to create attendance. Please try again.",
         variant: "destructive"
       });
     }

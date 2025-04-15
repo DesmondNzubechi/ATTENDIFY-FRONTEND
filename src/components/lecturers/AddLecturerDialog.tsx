@@ -1,28 +1,26 @@
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { 
-  Dialog, DialogContent, DialogHeader, 
-  DialogTitle, DialogFooter, DialogDescription 
-} from '@/components/ui/dialog';
+import * as React from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
 import {
-  Form, FormControl, FormField, FormItem,
-  FormLabel, FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
+// Form validation schema
 const formSchema = z.object({
-  fullName: z.string().min(2, {
-    message: "Full name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
+  fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
 });
 
 // Define the form values type based on the schema
@@ -31,13 +29,13 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddLecturerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onLecturerAdded: (lecturerData: { fullName: string; email: string }) => Promise<void>;
+  onLecturerAdded: (data: { fullName: string; email: string }) => Promise<void>;
 }
 
-export function AddLecturerDialog({ 
-  open, 
-  onOpenChange, 
-  onLecturerAdded 
+export function AddLecturerDialog({
+  open,
+  onOpenChange,
+  onLecturerAdded,
 }: AddLecturerDialogProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
@@ -58,7 +56,7 @@ export function AddLecturerDialog({
       onOpenChange(false);
       toast({
         title: "Success",
-        description: "Lecturer has been added successfully",
+        description: "Lecturer added successfully",
       });
     } catch (error) {
       toast({
@@ -77,7 +75,7 @@ export function AddLecturerDialog({
         <DialogHeader>
           <DialogTitle>Add New Lecturer</DialogTitle>
           <DialogDescription>
-            Create a new lecturer account. The lecturer will receive an email to set up their password.
+            Enter the details of the new lecturer. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -102,21 +100,29 @@ export function AddLecturerDialog({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} />
+                    <Input placeholder="johndoe@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adding...
+                    Saving...
                   </>
                 ) : (
-                  "Add Lecturer"
+                  "Save"
                 )}
               </Button>
             </DialogFooter>

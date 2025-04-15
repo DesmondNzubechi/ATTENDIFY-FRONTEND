@@ -32,6 +32,20 @@ export interface AttendanceSession {
   }>;
 }
 
+export interface CreateAttendanceData {
+  courseId: string;
+  acedemicSessionId: string;
+  semester: string;
+  level: string;
+}
+
+export interface MarkAttendanceData {
+  studentId: string;
+  status: 'present' | 'absent';
+  level?: string;
+  regNo?: string;
+}
+
 export const attendanceService = {
   getAllAttendance: async (): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/fetchAllAttendance");
@@ -41,7 +55,7 @@ export const attendanceService = {
     return await apiClient(`/api/v1/attendance/fetchAttendanceBySession/${sessionId}`);
   },
   
-  createAttendance: async (attendanceData: any): Promise<ApiResponse<BackendAttendance>> => {
+  createAttendance: async (attendanceData: CreateAttendanceData): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/createAttendance", {
       method: "POST",
       body: attendanceData
@@ -60,7 +74,7 @@ export const attendanceService = {
     });
   },
   
-  markAttendance: async (attendanceId: string, data: any): Promise<ApiResponse<BackendAttendance>> => {
+  markAttendance: async (attendanceId: string, data: MarkAttendanceData): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/markAttendance/${attendanceId}`, {
       method: "PATCH",
       body: data

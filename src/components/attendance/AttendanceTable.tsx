@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { FileDown, CheckCircle, XCircle, Clock, PlusCircle } from 'lucide-react';
+import { FileDown, CheckCircle, XCircle, Clock, PlusCircle, Power } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import {
   Table,
@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { attendanceService } from '@/services/api/attendanceService';
 
 export const AttendanceTable = () => {
-  const { selectedSession, markAttendance, setError } = useAttendanceStore();
+  const { selectedSession, markAttendance, setError, updateSession } = useAttendanceStore();
   const { toast } = useToast();
 
   const handleMarkAttendance = async (studentId: string, status: 'present' | 'absent') => {
@@ -24,23 +24,58 @@ export const AttendanceTable = () => {
     
     try {
       // Call the API to mark attendance
-      await attendanceService.markAttendance(selectedSession.id, {
-        studentId,
-        status
-      });
+      if (status === 'present') {
+        await attendanceService.markAttendance(selectedSession.id, {
+          studentId,
+          status
+        });
+      } else {
+        await attendanceService.markAbsent(selectedSession.id);
+      }
       
       // Update local state
       markAttendance(selectedSession.id, studentId, status);
       
       toast({
         title: "Attendance Marked",
-        description: "Student attendance has been updated successfully.",
+        description: `Student attendance has been marked as ${status}.`,
       });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to mark attendance');
       toast({
         title: "Error",
         description: "Failed to mark attendance. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleToggleSessionStatus = async () => {
+    if (!selectedSession) return;
+    
+    try {
+      if (selectedSession.isActive) {
+        // Deactivate the session
+        await attendanceService.deactivateAttendance(selectedSession.id);
+        updateSession(selectedSession.id, { isActive: false });
+        toast({
+          title: "Session Deactivated",
+          description: "Attendance session has been deactivated.",
+        });
+      } else {
+        // Activate the session
+        await attendanceService.activateAttendance(selectedSession.id);
+        updateSession(selectedSession.id, { isActive: true });
+        toast({
+          title: "Session Activated",
+          description: "Attendance session has been activated.",
+        });
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to update session status');
+      toast({
+        title: "Error",
+        description: "Failed to update session status. Please try again.",
         variant: "destructive"
       });
     }
@@ -68,13 +103,24 @@ export const AttendanceTable = () => {
   return (
     <Card className="lg:col-span-8">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>
-          {`${selectedSession.course} (${selectedSession.courseCode}) - Level ${selectedSession.level}`}
-        </CardTitle>
+        <div>
+          <CardTitle>
+            {`${selectedSession.course} (${selectedSession.courseCode}) - Level ${selectedSession.level}`}
+          </CardTitle>
+          <p className="text-sm text-gray-500 mt-1">Session: {selectedSession.sessionName} - {selectedSession.semester}</p>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">
             <FileDown size={16} />
             Export
+          </Button>
+          <Button 
+            onClick={handleToggleSessionStatus}
+            variant={selectedSession.isActive ? "destructive" : "default"}
+            className="gap-2"
+          >
+            <Power size={16} />
+            {selectedSession.isActive ? "Deactivate" : "Activate"}
           </Button>
         </div>
       </CardHeader>
@@ -153,12 +199,6 @@ export const AttendanceTable = () => {
           </TableBody>
         </Table>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
-          <PlusCircle size={16} />
-          Add Attendance
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
