@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { ActivateAttendanceDialog } from '@/components/dashboard/ActivateAttendanceDialog';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
 import { useAttendanceStore } from '@/stores/useAttendanceStore';
@@ -12,6 +12,7 @@ import { AttendanceTable } from '@/components/attendance/AttendanceTable';
 import { useCoursesStore } from '@/stores/useCoursesStore';
 import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function Attendance() {
   const { toast } = useToast();
@@ -39,6 +40,13 @@ export default function Attendance() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isActivateAttendanceOpen, setIsActivateAttendanceOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  // Additional filters
+  const [selectedLevel, setSelectedLevel] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedAcademicSession, setSelectedAcademicSession] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState('');
 
   // Setup filter options
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
@@ -90,6 +98,26 @@ export default function Attendance() {
     setFilterOptions(updatedFilters);
   };
 
+  // Get available levels
+  const getLevels = () => {
+    const levels = new Set<string>();
+    sessions.forEach(session => {
+      if (session.level) {
+        levels.add(session.level);
+      }
+    });
+    return Array.from(levels);
+  };
+
+  // Get formatted courses for dropdown
+  const getFormattedCourses = () => {
+    return courses.map(course => ({
+      id: course.id,
+      name: course.courseName,
+      code: course.courseCode
+    }));
+  };
+
   // Filter attendance sessions based on search query and filter options
   const filteredSessions = React.useMemo(() => {
     const activatedFilters = filterOptions.filter(filter => filter.checked);
@@ -102,12 +130,26 @@ export default function Attendance() {
         session.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
         session.sessionName.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // If no filters are activated, just use text search
+      // Apply dropdown filters
+      const matchesLevel = !selectedLevel || session.level === selectedLevel;
+      
+      const matchesCourse = !selectedCourse || courses.some(course => 
+        course.id === selectedCourse && 
+        (course.courseName === session.course || course.courseCode === session.courseCode)
+      );
+      
+      const matchesSession = !selectedAcademicSession || academicSessions.some(s => 
+        s.id === selectedAcademicSession && s.sessionName === session.sessionName
+      );
+      
+      const matchesSemester = !selectedSemester || session.semester.toLowerCase() === selectedSemester.toLowerCase();
+      
+      // If no filters are activated, just use text search and dropdown filters
       if (activatedFilters.length === 0) {
-        return matchesSearch;
+        return matchesSearch && matchesLevel && matchesCourse && matchesSession && matchesSemester;
       }
       
-      // Apply filters
+      // Apply additional filters
       const matchesFilters = activatedFilters.some(filter => {
         if (filter.group === 'Level') {
           return session.level === filter.label.split(' ')[1];
@@ -123,9 +165,9 @@ export default function Attendance() {
         return true;
       });
       
-      return matchesSearch && matchesFilters;
+      return matchesSearch && matchesFilters && matchesLevel && matchesCourse && matchesSession && matchesSemester;
     });
-  }, [sessions, searchQuery, filterOptions]);
+  }, [sessions, searchQuery, filterOptions, selectedLevel, selectedCourse, selectedAcademicSession, selectedSemester, courses, academicSessions]);
 
   // Show loading state
   if (isLoading || coursesLoading || sessionsLoading) {
@@ -155,22 +197,23 @@ export default function Attendance() {
 
   return (
     <DashboardLayout>
-      {/* <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Attendance</h1>
-        <Button 
-          onClick={() => setIsActivateAttendanceOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 gap-2"
-        >
-          <PlusCircle size={16} />
-          Add Attendance
-        </Button>
-      </div> */}
- 
       <SearchAndFilters 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenFilter={() => setIsFilterOpen(true)}
         onOpenActivateAttendance={() => setIsActivateAttendanceOpen(true)}
+        levels={getLevels()}
+        courses={getFormattedCourses()}
+        academicSessions={academicSessions.map(s => ({ id: s.id, name: s.sessionName }))}
+        semesters={["first semester", "second semester"]}
+        selectedLevel={selectedLevel}
+        selectedCourse={selectedCourse}
+        selectedSession={selectedAcademicSession}
+        selectedSemester={selectedSemester}
+        onLevelChange={setSelectedLevel}
+        onCourseChange={setSelectedCourse}
+        onSessionChange={setSelectedAcademicSession}
+        onSemesterChange={setSelectedSemester}
       />
  
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">

@@ -7,87 +7,65 @@ import { StudentDetails } from '@/components/dashboard/StudentDetails';
 import { AddStudentDialog } from '@/components/dashboard/AddStudentDialog';
 import { SuccessDialog } from '@/components/dashboard/SuccessDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { Users, UserPlus, BookOpen, GraduationCap } from 'lucide-react';
+import { Users, UserPlus, BookOpen, GraduationCap, CalendarDays, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useStudentsStore } from '@/stores/useStudentsStore';
 import { useCoursesStore } from '@/stores/useCoursesStore';
 import { useLecturersStore } from '@/stores/useLecturersStore';
-
-type Student = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  avatar?: string;
-  registrationNumber: string;
-  email: string;
-  course: string;
-};
+import { useAttendanceStore } from '@/stores/useAttendanceStore';
+import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function Overview() {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: '1',
-      firstName: 'Elizabeth',
-      lastName: 'Alan',
-      avatar: '/placeholder.svg',
-      registrationNumber: 'P7345H3234',
-      email: 'elizabeth@gmail.com',
-      course: 'Medicine & Surgery'
-    },
-    {
-      id: '2',
-      firstName: 'Desmond',
-      lastName: 'Nyeko',
-      avatar: '/placeholder.svg',
-      registrationNumber: 'P7346H3234',
-      email: 'desmond@gmail.com',
-      course: 'Law'
-    },
-    {
-      id: '3',
-      firstName: 'Cedar',
-      lastName: 'James',
-      avatar: '/placeholder.svg',
-      registrationNumber: 'P7346H3224',
-      email: 'cedar@gmail.com',
-      course: 'Engineering'
-    }
-  ]);
-  
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Get data from stores
-  const { students: backendStudents } = useStudentsStore();
-  const { courses } = useCoursesStore();
+  const { students, fetchStudents, deleteStudent } = useStudentsStore();
+  const { courses, fetchCourses } = useCoursesStore();
   const { lecturers, fetchAllLecturers } = useLecturersStore();
+  const { sessions: attendanceSessions, fetchAttendance } = useAttendanceStore();
+  const { sessions: academicSessions, fetchSessions } = useAcademicSessionsStore();
 
   // Fetch data on component mount
   useEffect(() => {
+    fetchStudents();
+    fetchCourses();
     fetchAllLecturers();
-  }, [fetchAllLecturers]);
+    fetchAttendance();
+    fetchSessions();
+  }, [fetchStudents, fetchCourses, fetchAllLecturers, fetchAttendance, fetchSessions]);
 
   const handleAddStudent = (newStudent: any) => {
-    const studentWithId = {
-      ...newStudent,
-      id: `${students.length + 1}`,
-      avatar: '/placeholder.svg',
-      firstName: newStudent.firstName,
-      lastName: newStudent.lastName,
-    };
-    
-    setStudents([...students, studentWithId]);
     setIsSuccessDialogOpen(true);
   };
 
   const handleDeleteStudent = (studentId: string) => {
-    setStudents(students.filter(student => student.id !== studentId));
-    toast({
-      title: "Student Removed",
-      description: "The student has been removed from the system."
-    });
+    setSelectedStudentId(studentId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteStudent = async () => {
+    if (selectedStudentId) {
+      try {
+        await deleteStudent(selectedStudentId);
+        toast({
+          title: "Student Removed",
+          description: "The student has been removed from the system."
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete student. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -102,18 +80,18 @@ export default function Overview() {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <StatCard 
           icon={<Users size={24} />} 
           title="All Students" 
-          value={backendStudents.length.toString()} 
+          value={students.length.toString()} 
           change={{ value: "2.5%", type: "increase" }}
           color="blue"
         />
         <StatCard 
           icon={<UserPlus size={24} />} 
           title="New Students" 
-          value="5,014" 
+          value={(students.length > 0 ? Math.round(students.length * 0.2) : 0).toString()} 
           change={{ value: "1.2%", type: "decrease" }}
           color="green"
         />
@@ -128,6 +106,18 @@ export default function Overview() {
           title="Lecturers" 
           value={lecturers.length.toString()} 
           color="purple"
+        />
+        <StatCard 
+          icon={<CalendarDays size={24} />} 
+          title="Academic Sessions" 
+          value={academicSessions.length.toString()} 
+          color="blue"
+        />
+        <StatCard 
+          icon={<ClipboardCheck size={24} />} 
+          title="Attendance" 
+          value={attendanceSessions.length.toString()} 
+          color="green"
         />
       </div>
       
@@ -158,6 +148,23 @@ export default function Overview() {
         onClose={() => setIsSuccessDialogOpen(false)}
         message="Student Added Successfully!"
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the student from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteStudent} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

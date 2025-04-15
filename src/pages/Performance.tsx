@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,29 +23,7 @@ import {
 } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
-
-// Sample data for attendance charts
-const attendanceData = [
-  { name: 'CSC101', present: 85, absent: 15 },
-  { name: 'CSC201', present: 78, absent: 22 },
-  { name: 'MTH301', present: 65, absent: 35 },
-  { name: 'PHY101', present: 90, absent: 10 },
-  { name: 'CHM202', present: 72, absent: 28 },
-];
-
-const studentAttendanceData = [
-  { name: 'Week 1', attendance: 90 },
-  { name: 'Week 2', attendance: 85 },
-  { name: 'Week 3', attendance: 92 },
-  { name: 'Week 4', attendance: 78 },
-  { name: 'Week 5', attendance: 88 },
-  { name: 'Week 6', attendance: 95 },
-];
-
-const overallAttendance = [
-  { name: 'Present', value: 82 },
-  { name: 'Absent', value: 18 },
-];
+import { useAttendanceStore } from '@/stores/useAttendanceStore';
 
 const COLORS = ['#0088FE', '#FF8042'];
 
@@ -53,7 +31,9 @@ export default function Performance() {
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [filterOption, setFilterOption] = useState('course');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
+  const { sessions } = useAttendanceStore();
 
   // Filter options
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
@@ -68,6 +48,96 @@ export default function Performance() {
     { id: 'session-current', label: '2024/2025', checked: false, group: 'Session' },
     { id: 'session-past', label: '2023/2024', checked: false, group: 'Session' },
   ]);
+
+  // Prepare data for charts
+  const [attendanceData, setAttendanceData] = useState<any[]>([]);
+  const [studentAttendanceData, setStudentAttendanceData] = useState<any[]>([]);
+  const [overallAttendance, setOverallAttendance] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (sessions.length === 0) return;
+
+    // Process attendance data by course
+    const courseData = sessions.map(session => {
+      const present = session.students.reduce((acc, student) => {
+        const presentCount = Object.values(student.attendance).filter(a => a.status === 'present').length;
+        return acc + presentCount;
+      }, 0);
+
+      const absent = session.students.reduce((acc, student) => {
+        const absentCount = Object.values(student.attendance).filter(a => a.status === 'absent').length;
+        return acc + absentCount;
+      }, 0);
+
+      const total = present + absent;
+      const presentPercentage = total > 0 ? Math.round((present / total) * 100) : 0;
+      const absentPercentage = total > 0 ? Math.round((absent / total) * 100) : 0;
+
+      return {
+        name: session.courseCode,
+        present: presentPercentage,
+        absent: absentPercentage,
+        fullName: session.course
+      };
+    });
+
+    // Filter for search
+    const filteredCourseData = searchQuery 
+      ? courseData.filter(course => 
+          course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          course.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : courseData;
+
+    setAttendanceData(filteredCourseData);
+
+    // Get weekly attendance data (simplified for demo)
+    const weeklyData = Array.from({ length: 6 }, (_, i) => {
+      const weekNumber = i + 1;
+      // Calculate average attendance for each week
+      const attendanceSum = sessions.reduce((acc, session) => {
+        const presentCount = session.students.reduce((sum, student) => {
+          const dates = Object.keys(student.attendance);
+          if (dates.length > i) {
+            return student.attendance[dates[i]]?.status === 'present' ? sum + 1 : sum;
+          }
+          return sum;
+        }, 0);
+        return acc + (presentCount / (session.students.length || 1)) * 100;
+      }, 0);
+      
+      const averageAttendance = sessions.length ? Math.round(attendanceSum / sessions.length) : 0;
+      
+      return {
+        name: `Week ${weekNumber}`,
+        attendance: averageAttendance
+      };
+    });
+    
+    setStudentAttendanceData(weeklyData);
+
+    // Calculate overall attendance
+    let totalPresent = 0;
+    let totalAbsent = 0;
+
+    sessions.forEach(session => {
+      session.students.forEach(student => {
+        Object.values(student.attendance).forEach(status => {
+          if (status.status === 'present') totalPresent++;
+          if (status.status === 'absent') totalAbsent++;
+        });
+      });
+    });
+
+    const totalAttendance = totalPresent + totalAbsent;
+    const presentPercentage = totalAttendance > 0 ? Math.round((totalPresent / totalAttendance) * 100) : 0;
+    const absentPercentage = totalAttendance > 0 ? Math.round((totalAbsent / totalAttendance) * 100) : 0;
+    
+    setOverallAttendance([
+      { name: 'Present', value: presentPercentage },
+      { name: 'Absent', value: absentPercentage }
+    ]);
+  }, [sessions, searchQuery]);
 
   const handleApplyFilters = (updatedFilters: FilterOption[]) => {
     setFilterOptions(updatedFilters);
@@ -94,6 +164,8 @@ export default function Performance() {
             <Input
               placeholder="Search"
               className="pl-8 w-[200px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <Button 
@@ -165,10 +237,10 @@ export default function Performance() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value, name) => [`${value}%`, name === 'present' ? 'Present' : 'Absent']} />
                   <Legend />
-                  <Bar dataKey="present" fill="#8884d8" name="Present %" />
-                  <Bar dataKey="absent" fill="#ff7373" name="Absent %" />
+                  <Bar dataKey="present" fill="#22c55e" name="Present %" />
+                  <Bar dataKey="absent" fill="#ef4444" name="Absent %" />
                 </BarChart>
               ) : (
                 <LineChart
@@ -178,9 +250,9 @@ export default function Performance() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Attendance']} />
                   <Legend />
-                  <Line type="monotone" dataKey="attendance" stroke="#8884d8" name="Attendance %" activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="attendance" stroke="#0284c7" name="Attendance %" activeDot={{ r: 8 }} />
                 </LineChart>
               )}
             </ResponsiveContainer>
@@ -207,7 +279,7 @@ export default function Performance() {
                     dataKey="value"
                   >
                     {overallAttendance.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#22c55e' : '#ef4444'} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -231,8 +303,8 @@ export default function Performance() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="attendance" stroke="#82ca9d" name="Attendance %" />
+                <Tooltip formatter={(value) => [`${value}%`, 'Attendance']} />
+                <Line type="monotone" dataKey="attendance" stroke="#0284c7" name="Attendance %" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
