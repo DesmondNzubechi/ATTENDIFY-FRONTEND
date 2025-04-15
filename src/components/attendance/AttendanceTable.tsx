@@ -102,7 +102,7 @@ export const AttendanceTable = () => {
   const generateAttendanceColumns = () => {
     // Create an array of 10 dates, starting from today and going backward
     const today = new Date();
-    return Array.from({ length: 10 }, (_, index) => {
+    return Array.from({ length: 6 }, (_, index) => {
       const date = new Date(today);
       date.setDate(today.getDate() - index);
       return date.toISOString().split('T')[0];
@@ -114,35 +114,18 @@ export const AttendanceTable = () => {
   return (
     <Card className="lg:col-span-8">
       <CardHeader className="flex flex-col">
-        <div className="text-center mb-4">
+        <div className="text-center mb-4 flex flex-col justify-center items-center">
           <h2 className="text-xl font-bold">FACULTY OF ENGINEERING</h2>
-          <h3 className="text-lg">Department of Electrical Engineering</h3>
-          <div className="mt-2">
+          <h3 className="text-lg uppercase font-semibold">Department of Electrical Engineering Attendance Sheet</h3>
+          <div className="mt-2 flex uppercase items-center gap-1">
             <p><span className="font-medium">Course Code:</span> {selectedSession.courseCode}</p>
             <p><span className="font-medium">Course Title:</span> {selectedSession.course}</p>
             <p><span className="font-medium">Level:</span> {selectedSession.level}</p>
+            <p><span className="font-medium">Semester:</span> {selectedSession.semester}</p>
             <p><span className="font-medium">Session:</span> {selectedSession.sessionName}</p>
           </div>
         </div>
-        <div className="flex justify-between items-center">
-          <CardTitle>
-            Attendance Record
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <FileDown size={16} />
-              Export
-            </Button>
-            <Button 
-              onClick={handleToggleSessionStatus}
-              variant={selectedSession.isActive ? "destructive" : "default"}
-              className="gap-2"
-            >
-              <Power size={16} />
-              {selectedSession.isActive ? "Deactivate" : "Activate"}
-            </Button>
-          </div>
-        </div>
+     
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -181,7 +164,7 @@ export const AttendanceTable = () => {
                           bgColorClass = 'bg-[#F2FCE2]'; // Soft green for present
                           statusDisplay = (
                             <span className="flex items-center justify-center text-green-600">
-                              <CheckCircle size={16} className="mr-1" />
+                              <CheckCircle size={12} className="mr-" />
                               Present
                             </span>
                           );
@@ -189,7 +172,7 @@ export const AttendanceTable = () => {
                           bgColorClass = 'bg-[#ea384c]/10'; // Light red for absent
                           statusDisplay = (
                             <span className="flex items-center justify-center text-[#ea384c]">
-                              <XCircle size={16} className="mr-1" />
+                              <XCircle size={12} className="mr-" />
                               Absent
                             </span>
                           );
@@ -230,6 +213,25 @@ export const AttendanceTable = () => {
           </Table>
         </div>
       </CardContent>
+      <div className="flex p-3 justify-between items-center">
+          {/* <CardTitle>
+            Attendance Record
+          </CardTitle> */}
+          {/* <div className="flex gap-2"> */}
+            <Button variant="outline" className="gap-2">
+              <FileDown size={16} />
+              Export
+            </Button>
+            <Button 
+              onClick={handleToggleSessionStatus}
+              variant={selectedSession.isActive ? "destructive" : "default"}
+              className="gap-2"
+            >
+              <Power size={16} />
+              {selectedSession.isActive ? "Deactivate" : "Activate"}
+            </Button>
+          {/* </div> */}
+        </div>
     </Card>
   );
 };

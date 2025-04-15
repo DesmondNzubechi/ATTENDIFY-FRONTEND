@@ -61,11 +61,11 @@ export default function Attendance() {
 
   const handleActivateAttendance = async (data: any) => {
     try {
-      // Format the data for the API
+      // Format the data for the API 
       const attendanceData = {
         courseId: data.courseId,
         acedemicSessionId: data.sessionId,
-        semester: data.semester || "first semester",
+        semester: data.semester,
         level: data.level
       };
 
@@ -155,7 +155,7 @@ export default function Attendance() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-4">
+      {/* <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Attendance</h1>
         <Button 
           onClick={() => setIsActivateAttendanceOpen(true)}
@@ -164,20 +164,20 @@ export default function Attendance() {
           <PlusCircle size={16} />
           Add Attendance
         </Button>
-      </div>
-
+      </div> */}
+ 
       <SearchAndFilters 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenFilter={() => setIsFilterOpen(true)}
         onOpenActivateAttendance={() => setIsActivateAttendanceOpen(true)}
       />
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+ 
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
         <AttendanceSessionsList filteredSessions={filteredSessions} />
         <AttendanceTable />
       </div>
-
+  
       <ActivateAttendanceDialog 
         open={isActivateAttendanceOpen}
         onOpenChange={setIsActivateAttendanceOpen}

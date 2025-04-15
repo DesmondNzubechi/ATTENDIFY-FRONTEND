@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Play } from 'lucide-react';
+import { Search, Filter, Play, PlusCircle } from 'lucide-react';
 
 interface SearchAndFiltersProps {
   searchQuery: string;
@@ -19,7 +19,7 @@ export const SearchAndFilters = ({
 }: SearchAndFiltersProps) => {
   return (
     <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold">Attendance</h1>
+      <h1 className="text-2xl uppercase font-bold">Attendance</h1>
       <div className="flex gap-2">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
@@ -42,8 +42,8 @@ export const SearchAndFilters = ({
           className="bg-blue-600 hover:bg-blue-700 gap-2"
           onClick={onOpenActivateAttendance}
         >
-          <Play size={16} />
-          Activate Attendance
+           <PlusCircle size={16} />
+          Add Attendance
         </Button>
       </div>
     </div>

@@ -56,7 +56,7 @@ export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsL
   };
 
   return (
-    <Card className="lg:col-span-4">
+    <Card className="lg:col-span-8">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>Attendance Sessions</span>
@@ -64,7 +64,7 @@ export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsL
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+        <div className=" max-h-[60vh] overflow-y-auto">
           {filteredSessions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No attendance sessions found.</p>
           ) : (
