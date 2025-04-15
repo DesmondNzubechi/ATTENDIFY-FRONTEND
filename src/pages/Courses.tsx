@@ -56,13 +56,12 @@ export default function Courses() {
       });
     }
   };
-
+ 
   const handleAddCourse = async (newCourse: any) => {
     try {
       const response = await coursesService.addCourse({
-        courseName: newCourse.name,
-        courseCode: newCourse.code,
-        description: newCourse.description,
+        courseTitle: newCourse.courseName,
+        courseCode: newCourse.courseCode,
         level: newCourse.level,
         semester: newCourse.semester
       });

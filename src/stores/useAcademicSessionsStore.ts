@@ -33,7 +33,7 @@ export const useAcademicSessionsStore = create<AcademicSessionsState>((set) => (
     try {
       set({ isLoading: true, error: null });
       const response = await academicSessionsService.getAllSessions();
-      
+        
       if (response && response.data && response.data.data) {
         const formattedSessions: AcademicSession[] = response.data.data.map((session: BackendAcademicSession) => ({
           id: session._id,

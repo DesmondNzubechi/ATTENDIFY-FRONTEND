@@ -17,7 +17,7 @@ import {
 import { AddStudentDialog } from '@/components/dashboard/AddStudentDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useStudentsStore } from '@/stores/useStudentsStore';
-import { studentsService } from '@/services/api/studentsService';
+import { addStudentData, studentsService } from '@/services/api/studentsService';
 
 export default function Students() {
   const { 
@@ -73,14 +73,15 @@ export default function Students() {
     }
   };
 
-  const handleAddStudent = async (newStudent: any) => {
+  const handleAddStudent = async (newStudent: addStudentData | any) => {
     try {
       const response = await studentsService.createStudent({
         name: `${newStudent.firstName} ${newStudent.lastName}`,
         email: newStudent.email,
-        registrationNumber: newStudent.registrationNumber,
-        course: newStudent.course,
-        level: newStudent.level || '100',
+        regNo: newStudent.regNo,   
+        level: newStudent.level || '100', 
+        addmissionYear: newStudent.addmissionYear,
+fingerPrint: newStudent.regNo
       });
       
       // Add to store with the id from the response
@@ -112,7 +113,7 @@ export default function Students() {
         variant: "destructive"
       });
     }
-  };
+  }; 
 
   if (isLoading) {
     return (

@@ -15,9 +15,9 @@ interface AddSessionDialogProps {
 export function AddSessionDialog({ open, onOpenChange, onSessionAdded }: AddSessionDialogProps) {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    sessionName: '',
-    startDate: '',
-    endDate: ''
+    name: '',
+    start: '',
+    end: ''
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,19 +41,19 @@ export function AddSessionDialog({ open, onOpenChange, onSessionAdded }: AddSess
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.sessionName.trim()) {
-      newErrors.sessionName = 'Session name is required';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Session name is required';
     }
     
-    if (!formData.startDate.trim()) {
-      newErrors.startDate = 'Start date is required';
+    if (!formData.start.trim()) {
+      newErrors.start = 'Start date is required';
     }
     
-    if (!formData.endDate.trim()) {
-      newErrors.endDate = 'End date is required';
-    } else if (formData.startDate && formData.endDate && 
-              new Date(formData.endDate) <= new Date(formData.startDate)) {
-      newErrors.endDate = 'End date must be after start date';
+    if (!formData.end.trim()) {
+      newErrors.end = 'End date is required';
+    } else if (formData.start && formData.end && 
+              new Date(formData.end) <= new Date(formData.start)) {
+      newErrors.end = 'End date must be after start date';
     }
     
     setErrors(newErrors);
@@ -67,9 +67,9 @@ export function AddSessionDialog({ open, onOpenChange, onSessionAdded }: AddSess
       onSessionAdded(formData);
       onOpenChange(false);
       setFormData({
-        sessionName: '',
-        startDate: '',
-        endDate: ''
+        name: '',
+        start: '',
+        end: ''
       });
     } else {
       toast({
@@ -89,53 +89,53 @@ export function AddSessionDialog({ open, onOpenChange, onSessionAdded }: AddSess
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label htmlFor="sessionName" className="text-sm font-medium">
+              <label htmlFor="name" className="text-sm font-medium">
                 Session Name
               </label>
               <Input
-                id="sessionName"
-                name="sessionName"
+                id="name"
+                name="name"
                 placeholder="e.g., 2024/2025"
-                value={formData.sessionName}
+                value={formData.name}
                 onChange={handleChange}
-                className={errors.sessionName ? "border-red-500" : ""}
+                className={errors.name ? "border-red-500" : ""}
               />
-              {errors.sessionName && (
-                <p className="text-xs text-red-500">{errors.sessionName}</p>
+              {errors.name && (
+                <p className="text-xs text-red-500">{errors.name}</p>
               )}
             </div>
             
             <div className="grid gap-2">
-              <label htmlFor="startDate" className="text-sm font-medium">
+              <label htmlFor="start" className="text-sm font-medium">
                 Start Date
               </label>
               <Input
-                id="startDate"
-                name="startDate"
+                id="start"
+                name="start"
                 type="date"
-                value={formData.startDate}
+                value={formData.start}
                 onChange={handleChange}
-                className={errors.startDate ? "border-red-500" : ""}
+                className={errors.start ? "border-red-500" : ""}
               />
-              {errors.startDate && (
-                <p className="text-xs text-red-500">{errors.startDate}</p>
+              {errors.start && (
+                <p className="text-xs text-red-500">{errors.start}</p>
               )}
             </div>
             
             <div className="grid gap-2">
-              <label htmlFor="endDate" className="text-sm font-medium">
+              <label htmlFor="end" className="text-sm font-medium">
                 End Date
               </label>
               <Input
-                id="endDate"
-                name="endDate"
+                id="end"
+                name="end"
                 type="date"
-                value={formData.endDate}
+                value={formData.end}
                 onChange={handleChange}
-                className={errors.endDate ? "border-red-500" : ""}
+                className={errors.end ? "border-red-500" : ""}
               />
-              {errors.endDate && (
-                <p className="text-xs text-red-500">{errors.endDate}</p>
+              {errors.end && (
+                <p className="text-xs text-red-500">{errors.end}</p>
               )}
             </div>
           </div>

@@ -18,7 +18,8 @@ export function AddCourseDialog({ open, onOpenChange, onCourseAdded }: AddCourse
   const [formData, setFormData] = useState({
     courseName: '',
     courseCode: '',
-    description: ''
+    semester: '',
+level: ''
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,7 +64,8 @@ export function AddCourseDialog({ open, onOpenChange, onCourseAdded }: AddCourse
       setFormData({
         courseName: '',
         courseCode: '',
-        description: ''
+        semester: '',
+        level: ''
       });
     } else {
       toast({
@@ -109,7 +111,7 @@ export function AddCourseDialog({ open, onOpenChange, onCourseAdded }: AddCourse
                 placeholder="e.g., CSC101"
                 value={formData.courseCode}
                 onChange={handleChange}
-                className={errors.courseCode ? "border-red-500" : ""}
+                className={errors.courseCode ? "border-red-500 outline-0 " : " outline-0 "}
               />
               {errors.courseCode && (
                 <p className="text-xs text-red-500">{errors.courseCode}</p>
@@ -117,6 +119,40 @@ export function AddCourseDialog({ open, onOpenChange, onCourseAdded }: AddCourse
             </div>
             
             <div className="grid gap-2">
+              <label htmlFor="semester" className="text-sm font-medium">
+               Semester
+              </label>
+              <Input
+                id="semester"
+                name="semester"
+                placeholder="e.g., First Semester"
+                value={formData.semester}
+                onChange={handleChange}
+                className={errors.semester ? "border-red-500 outline-0 " : " outline-0 "}
+              />
+              {errors.semester && (
+                <p className="text-xs text-red-500">{errors.semester}</p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <label htmlFor="level" className="text-sm font-medium">
+               Level
+              </label>
+              <Input
+                type='number'
+                id="level"
+                name="level"
+                placeholder="e.g., 500"
+                value={formData.level}
+                onChange={handleChange}
+                className={errors.level ? "border-red-500 outline-0 " : " outline-0 "}
+              />
+              {errors.level && (
+                <p className="text-xs text-red-500">{errors.level}</p>
+              )}
+            </div>
+            {/* <div className="grid gap-2">
               <label htmlFor="description" className="text-sm font-medium">
                 Course Description
               </label>
@@ -128,7 +164,7 @@ export function AddCourseDialog({ open, onOpenChange, onCourseAdded }: AddCourse
                 onChange={handleChange}
                 rows={4}
               />
-            </div>
+            </div> */}
           </div>
           
           <DialogFooter>

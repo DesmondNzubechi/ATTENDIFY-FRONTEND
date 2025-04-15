@@ -17,7 +17,7 @@ import {
 import { AddSessionDialog } from '@/components/dashboard/AddSessionDialog';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
 import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
-import { academicSessionsService } from '@/services/api/academicSessionsService';
+import { academicSessionsService, addSessionData } from '@/services/api/academicSessionsService';
 
 export default function AcademicSessions() {
   const { 
@@ -29,7 +29,7 @@ export default function AcademicSessions() {
     deleteSession: deleteSessionFromStore,
     setError
   } = useAcademicSessionsStore();
-  
+   
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddSessionOpen, setIsAddSessionOpen] = useState(false);
@@ -134,14 +134,15 @@ export default function AcademicSessions() {
     }
   };
 
-  const handleAddSession = async (newSession: any) => {
+  const handleAddSession = async (newSession: addSessionData) => {
     try {
       const response = await academicSessionsService.createSession({
-        sessionName: newSession.name,
-        startDate: newSession.startDate,
-        endDate: newSession.endDate
+        name: newSession.name,
+        start: newSession.start,
+        end: newSession.end
       });
       
+      console.log("The response", response)
       // Add to store with the id from the response
       if (response && response.data && response.data.data && response.data.data[0]) {
         const addedSession = response.data.data[0];
@@ -356,7 +357,7 @@ export default function AcademicSessions() {
         open={isAddSessionOpen}
         onOpenChange={setIsAddSessionOpen}
         onSessionAdded={handleAddSession}
-      />
+      /> 
 
       <FilterModal 
         open={isFilterOpen}

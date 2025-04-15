@@ -33,11 +33,14 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  registrationNumber: z.string().min(6, {
+  regNo: z.string().min(6, {
     message: "Registration number must be at least 6 characters.",
   }),
-  course: z.string().min(2, {
-    message: "Course must be at least 2 characters.",
+  level: z.string().min(2, {
+    message: "level must be at least 2 characters.",
+  }),
+  addmissionYear: z.string().min(2, {
+    message: "You have not included the addmission year.",
   }),
 });
 
@@ -62,8 +65,9 @@ export function AddStudentDialog({
       firstName: "",
       lastName: "",
       email: "",
-      registrationNumber: "",
-      course: "",
+      regNo: "",
+      level: "",
+      addmissionYear: ""
     },
   });
 
@@ -113,7 +117,7 @@ export function AddStudentDialog({
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter last name" {...field} />
+                      <Input type='text' placeholder="Enter last name" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -135,27 +139,43 @@ export function AddStudentDialog({
 
             <FormField
               control={form.control}
-              name="registrationNumber"
+              name="regNo"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Registration Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. P7345H3234" {...field} />
-                  </FormControl>
+                    <Input type='number' placeholder="e.g. P7345H3234" {...field} />
+                  </FormControl> 
                 </FormItem>
               )}
             />
 
-            <FormField
+            <FormField 
               control={form.control}
-              name="course"
+              name="level"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Course Enrolled</FormLabel>
+                  <FormLabel>Level</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Computer Science" {...field} />
+                    <Input type='number' placeholder="e.g. 200" {...field} />
                   </FormControl>
                 </FormItem>
+
+
+              )}
+            />
+             <FormField 
+              control={form.control}
+              name="addmissionYear"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Year Of Addmission</FormLabel>
+                  <FormControl>
+                    <Input type='number' placeholder="e.g. 2020" {...field} />
+                  </FormControl>
+                </FormItem>
+
+
               )}
             />
 

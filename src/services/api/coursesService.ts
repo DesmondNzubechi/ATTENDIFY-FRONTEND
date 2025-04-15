@@ -9,13 +9,21 @@ export type Course = {
   description: string;
   level?: string;
   semester?: string;
+  courseTitle?: string
 };
 
+export type addCourseType = {
+  courseCode: string;
+  level: string;
+  semester: string;
+  courseTitle: string
+}
+  
 export const coursesService = {
   getAllCourses: async (): Promise<ApiResponse<BackendCourse>> => {
     return await apiClient("/api/v1/course/fetchAllCourse");
   },
-  
+   
   getCoursesByLevel: async (level: string): Promise<ApiResponse<BackendCourse>> => {
     return await apiClient(`/api/v1/course/fetchCoursesByLevel/${level}`);
   },
@@ -24,7 +32,7 @@ export const coursesService = {
     return await apiClient(`/api/v1/course/fetchCoursesBySemester/${semester}`);
   },
    
-  addCourse: async (courseData: Omit<Course, "id">): Promise<ApiResponse<BackendCourse>> => {
+  addCourse: async (courseData: addCourseType): Promise<ApiResponse<BackendCourse>> => {
     return await apiClient("/api/v1/course/addANewCourse", {
       method: "POST",
       body: courseData

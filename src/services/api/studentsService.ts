@@ -13,11 +13,20 @@ export interface Student {
   yearOfAdmission?: string;
 }
 
+export interface addStudentData {
+  level: string
+  addmissionYear: string
+  email: string
+  name: string
+  regNo: string | number
+  fingerPrint: string | number
+}
+
 export const studentsService = {
   getAllStudents: async () => {
     return await apiClient("/api/v1/student/fetchAllTheStudents");
   },
-   
+  
   getStudentById: async (id: string) => {
     return await apiClient(`/api/v1/student/fetchStudentByID/${id}`);
   },
@@ -30,10 +39,10 @@ export const studentsService = {
     return await apiClient(`/api/v1/student/fetchStudentByYearOfAdmission?year=${year}`);
   },
   
-  createStudent: async (studentData: Omit<Student, "id">) => {
+  createStudent: async (studentData: addStudentData) => {
     return await apiClient("/api/v1/student/createStudent", {
       method: "POST",
-      body: studentData
+      body: studentData 
     });
   },
   
