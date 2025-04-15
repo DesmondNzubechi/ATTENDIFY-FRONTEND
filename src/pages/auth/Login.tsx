@@ -40,7 +40,7 @@ export default function Login() {
     try {
       setIsSubmitting(true); 
       await login({email, password});
-      navigate('/');
+      navigate(from);
     } catch (error) { 
       // Error is handled in the auth context
     } finally {

@@ -1,0 +1,278 @@
+
+import React, { useState } from 'react';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { authService } from '@/services/api/authService';
+import { useUserStore } from '@/stores/useUserStore';
+import { LogOut, User, Key, Loader2 } from 'lucide-react';
+
+export default function UserProfile() {
+  const { currentUser, setUser, logout } = useUserStore();
+  const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [profileData, setProfileData] = useState({
+    firstName: currentUser?.firstName || '',
+    lastName: currentUser?.lastName || '',
+    email: currentUser?.email || '',
+  });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setProfileData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileData.firstName || !profileData.lastName || !profileData.email) {
+      toast({
+        title: "Error",
+        description: "All fields are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      const response = await authService.updateProfile({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        email: profileData.email,
+      });
+
+      if (currentUser) {
+        setUser({
+          ...currentUser,
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          email: profileData.email,
+        });
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "All fields are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      await authService.changePassword({
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      setPasswordData({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to change password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Success",
+      description: "Logged out successfully",
+    });
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="container mx-auto py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">My Profile</h1>
+          <Button variant="destructive" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+
+        <Tabs defaultValue="profile" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="password">Password</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Update your personal information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="text-sm font-medium">First Name</label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={profileData.firstName}
+                      onChange={handleProfileChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={profileData.lastName}
+                      onChange={handleProfileChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium">Email</label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={profileData.email}
+                      onChange={handleProfileChange}
+                    />
+                  </div>
+
+                  <Button type="submit" disabled={isUpdating}>
+                    {isUpdating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <User className="mr-2 h-4 w-4" />
+                        Update Profile
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="password">
+            <Card>
+              <CardHeader>
+                <CardTitle>Change Password</CardTitle>
+                <CardDescription>
+                  Update your password
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="oldPassword" className="text-sm font-medium">Current Password</label>
+                    <Input
+                      id="oldPassword"
+                      name="oldPassword"
+                      type="password"
+                      value={passwordData.oldPassword}
+                      onChange={handlePasswordChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="newPassword" className="text-sm font-medium">New Password</label>
+                    <Input
+                      id="newPassword"
+                      name="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm New Password</label>
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                    />
+                  </div>
+
+                  <Button type="submit" disabled={isChangingPassword}>
+                    {isChangingPassword ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Changing Password...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="mr-2 h-4 w-4" />
+                        Change Password
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
+  );
+}

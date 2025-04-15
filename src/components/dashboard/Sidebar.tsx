@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { BarChart, Users, GraduationCap, Calendar, BookOpen, Library, PieChart, Settings, HelpCircle, Menu, X } from 'lucide-react';
+import { BarChart, Users, GraduationCap, Calendar, BookOpen, Library, PieChart, Settings, HelpCircle, Menu, X, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link, useLocation } from 'react-router-dom';
+import { useUserStore } from '@/stores/useUserStore';
 
 type SidebarItemProps = {
   icon: React.ElementType;
@@ -52,6 +53,7 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const { currentUser } = useUserStore();
   
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -127,6 +129,12 @@ export function Sidebar() {
         </nav>
         
         <div className="p-3 border-t border-sidebar-border space-y-1">
+          <SidebarItem
+            icon={UserCircle}
+            label="My Profile"
+            active={location.pathname === '/profile'}
+            to="/profile"
+          />
           <SidebarItem icon={Settings} label="Settings" />
           <SidebarItem icon={HelpCircle} label="Help Center" />
         </div>

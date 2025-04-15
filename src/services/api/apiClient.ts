@@ -5,16 +5,9 @@ type RequestOptions = {
   body?: any;
 };
 
-// Get JWT token from cookies
-const getJwtFromCookie = (): string | null => {
-  const cookies = document.cookie.split(';');
-  for (let i = 0; i < cookies.length; i++) {
-    const cookie = cookies[i].trim();
-    if (cookie.startsWith('jwt=')) {
-      return cookie.substring(4);
-    }
-  }
-  return null;
+// Get JWT token from localStorage
+const getAuthToken = (): string | null => {
+  return localStorage.getItem("auth_token");
 };
 
 export const apiClient = async (endpoint: string, options: RequestOptions = {}) => {
@@ -25,10 +18,10 @@ export const apiClient = async (endpoint: string, options: RequestOptions = {}) 
     ...options.headers,
   };
 
-  // Add JWT token from cookie if available
-  const jwtToken = getJwtFromCookie();
-  if (jwtToken) {
-    headers['Authorization'] = `Bearer ${jwtToken}`;
+  // Add auth token from localStorage if available
+  const authToken = getAuthToken();
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
 
   const requestOptions: RequestInit = {

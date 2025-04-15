@@ -17,7 +17,11 @@ import AcademicSessions from "./pages/AcademicSessions";
 import Performance from "./pages/Performance";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import UserProfile from "./pages/auth/UserProfile";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import NotFound from "./pages/NotFound";
+import { PrivateRoute } from "./components/auth/PrivateRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,13 +44,18 @@ const App = () => (
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              
               <Route path="/" element={<Overview />} />
+              <Route path="/profile" element={<UserProfile />} />
               <Route path="/lecturers" element={<Lecturers />} />
               <Route path="/students" element={<Students />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/academic-sessions" element={<AcademicSessions />} />
               <Route path="/performance" element={<Performance />} />
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
