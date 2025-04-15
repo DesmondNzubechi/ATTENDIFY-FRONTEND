@@ -34,11 +34,11 @@ const colorMap = {
 
 export function StatCard({ icon, title, value, change, color }: StatCardProps) {
   return (
-    <div className="stat-card">
+    <div className="stat-card min-h-[100px] flex   flec-col items-center">
       <div className={cn('stat-icon', colorMap[color].bg, colorMap[color].text)}>
         {icon}
       </div>
-      <div>
+      <div className='flex flex-col '>
         <p className="text-sm font-medium text-gray-500">{title}</p>
         <h3 className="text-xl font-semibold">{value}</h3>
         {change && (

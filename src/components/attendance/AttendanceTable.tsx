@@ -179,6 +179,7 @@ export const AttendanceTable = () => {
                               <span className="flex items-center justify-center text-[#ea384c]">
                                 <XCircle size={12} className="mr-1" />
                                 Absent
+                                
                               </span>
                             );
                           }

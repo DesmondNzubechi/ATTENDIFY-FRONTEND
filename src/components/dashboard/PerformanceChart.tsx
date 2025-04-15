@@ -44,7 +44,7 @@ export function PerformanceChart() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
+        <div> 
           <CardTitle className="text-base font-medium">Performance</CardTitle>
           <CardDescription className="text-xs">Student attendance performance</CardDescription>
         </div>
