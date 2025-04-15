@@ -107,7 +107,7 @@ export const AttendanceTable = () => {
   const generateAttendanceColumns = () => {
     // Create an array of 10 dates, starting from today and going backward
     const today = new Date();
-    return Array.from({ length: 10 }, (_, index) => {
+    return Array.from({ length: 6 }, (_, index) => {
       const date = new Date(today);
       date.setDate(today.getDate() - index);
       return date.toISOString().split('T')[0];

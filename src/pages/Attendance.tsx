@@ -202,18 +202,6 @@ export default function Attendance() {
         setSearchQuery={setSearchQuery}
         onOpenFilter={() => setIsFilterOpen(true)}
         onOpenActivateAttendance={() => setIsActivateAttendanceOpen(true)}
-        levels={getLevels()}
-        courses={getFormattedCourses()}
-        academicSessions={academicSessions.map(s => ({ id: s.id, name: s.sessionName }))}
-        semesters={["first semester", "second semester"]}
-        selectedLevel={selectedLevel}
-        selectedCourse={selectedCourse}
-        selectedSession={selectedAcademicSession}
-        selectedSemester={selectedSemester}
-        onLevelChange={setSelectedLevel}
-        onCourseChange={setSelectedCourse}
-        onSessionChange={setSelectedAcademicSession}
-        onSemesterChange={setSelectedSemester}
       />
  
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
