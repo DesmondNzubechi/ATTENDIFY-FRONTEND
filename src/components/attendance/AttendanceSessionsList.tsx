@@ -1,129 +1,184 @@
-
 import React, { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { CheckCircle, XCircle, Calendar, Clock, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAttendanceStore } from '@/stores/useAttendanceStore';
-import { AttendanceSession } from '@/stores/useAttendanceStore';
+import { useAttendanceStore, AttendanceSession } from '@/stores/useAttendanceStore';
+import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from 'date-fns';
+import { CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 
 interface AttendanceSessionsListProps {
   filteredSessions: AttendanceSession[];
-  onDelete?: (sessionId: string) => void;
 }
 
-export const AttendanceSessionsList = ({ filteredSessions, onDelete }: AttendanceSessionsListProps) => {
-  const { selectedSession, setSelectedSession } = useAttendanceStore();
-  
-  const handleSessionClick = (session: AttendanceSession) => {
-    setSelectedSession(session);
-  };
+export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsListProps) => {
+  const {
+    selectedSession,
+    setSelectedSession,
+    deleteSession
+  } = useAttendanceStore();
+  const { toast } = useToast();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
-  const handleDeleteClick = (e: React.MouseEvent, sessionId: string) => {
-    e.stopPropagation(); // Prevent session selection
-    if (onDelete) {
-      onDelete(sessionId);
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch (error) {
+      return dateString;
     }
   };
 
+  const getTimeAgo = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'date unknown';
+    }
+  };
+
+  const handleDeletePrompt = (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    setSessionToDelete(sessionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    try {
+      await deleteSession(sessionToDelete);
+      toast({
+        title: "Session Deleted",
+        description: "Attendance session has been deleted successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete session. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setIsDeleteDialogOpen(false);
+  };
+
   return (
-    <Card className="lg:col-span-4">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-medium">Attendance Sessions</CardTitle>
-        <span className="text-xs text-gray-500">{filteredSessions.length} sessions</span>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[500px] pr-4">
+    <>
+      <Card className="lg:col-span-8">
+        <CardHeader>
+          <CardTitle className="flex justify-between items-center">
+            <span>Attendance Sessions</span>
+            <Badge className="bg-blue-500">{filteredSessions.length} Sessions</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           {filteredSessions.length === 0 ? (
-            <div className="text-center py-10">
-              <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No sessions found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Try creating a new attendance session or adjusting your search.
-              </p>
-            </div>
+            <p className="text-gray-500 text-center py-4">No attendance sessions found.</p>
           ) : (
-            <div className="space-y-2">
-              {filteredSessions.map((session) => {
-                // Count present and absent students
-                const presentCount = session.students.filter(s => 
-                  Object.values(s.attendance).some(a => a.status === 'present')
-                ).length;
-                
-                const absentCount = session.students.filter(s => 
-                  Object.values(s.attendance).some(a => a.status === 'absent')
-                ).length;
-                
-                // Format creation date
-                const creationDate = new Date(session.date);
-                const formattedDate = formatDistanceToNow(creationDate, { addSuffix: true });
-                
-                return (
-                  <div 
-                    key={session.id}
-                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                      selectedSession?.id === session.id 
-                        ? 'bg-blue-50 border-blue-200' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => handleSessionClick(session)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-medium text-gray-900">{session.course}</h3>
-                          <span className="text-xs font-medium rounded-full px-2 py-0.5 bg-blue-100 text-blue-800">
-                            {session.courseCode}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs text-gray-500">{session.sessionName} | Level {session.level}</p>
-                        <p className="mt-1 text-xs text-gray-500">{session.semester}</p>
-                      </div>
-                      <div className="flex items-center">
-                        <span className={`text-xs font-medium rounded-full px-2 py-0.5 ${
-                          session.isActive 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {session.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                        {onDelete && (
+            <div className="overflow-auto max-h-[60vh]">
+              <table className="min-w-full text-sm text-left border rounded-md">
+                <thead className="bg-gray-100 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-3">Course</th>
+                    <th className="p-3">Level</th>
+                    <th className="p-3">Session</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3">Semester</th>
+                    <th className="p-3">Present</th>
+                    <th className="p-3">Absent</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSessions.map((session) => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const presentCount = session.students?.filter(
+                      s => s.attendance[today]?.status === 'present'
+                    ).length || 0;
+                    const absentCount = session.students?.filter(
+                      s => s.attendance[today]?.status === 'absent'
+                    ).length || 0;
+
+                    return (
+                      <tr
+                        key={session.id}
+                        className={`border-b hover:bg-gray-50 cursor-pointer ${selectedSession?.id === session.id ? 'bg-blue-50' : ''}`}
+                        onClick={() => setSelectedSession(session)}
+                      >
+                        <td className="p-3 font-medium">{session.course} ({session.courseCode})</td>
+                        <td className="p-3">{session.level}</td>
+                        <td className="p-3">{session?.sessionName}</td>
+                        <td className="p-3">
+                          {formatDate(session.date)}
+                          <br />
+                          <span className="text-xs text-gray-500">({getTimeAgo(session.date)})</span>
+                        </td>
+                        <td className="p-3">{session.semester}</td>
+                        <td className=" p-3 text-green-600 ">
+                          {/*<CheckCircle size={12} className="mr-" />*/} {presentCount}
+                        </td>
+                        <td className="p-3 text-red-600 ">
+                          {/* <XCircle size={6} className="mr-" />*/} {absentCount}
+                        </td>
+                        <td className="p-3">
+                          {session.isActive ? (
+                            <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                              Inactive
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="ml-2 p-0 h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={(e) => handleDeleteClick(e, session.id)}
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => handleDeletePrompt(e, session.id)}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} className="text-red-500" />
                           </Button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="mt-3 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center text-green-600">
-                          <CheckCircle size={14} className="mr-1" />
-                          <span>{presentCount} Present</span>
-                        </div>
-                        <div className="flex items-center text-red-600">
-                          <XCircle size={14} className="mr-1" />
-                          <span>{absentCount} Absent</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center text-gray-500">
-                        <Clock size={14} className="mr-1" />
-                        <span>{formattedDate}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
-        </ScrollArea>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the attendance session from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSession} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </> 
   );
 };

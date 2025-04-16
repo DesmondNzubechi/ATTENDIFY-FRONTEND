@@ -4,7 +4,7 @@ import { ApiResponse, BackendLecturer } from '@/types/api';
 
 export const fetchLecturers = async () => {
   return await apiClient('/api/v1/lecturer/getAllLecturer') as ApiResponse<BackendLecturer>;
-};
+}; 
 
 export const createLecturer = async (lecturerData: { fullName: string, email: string }) => {
   return await apiClient('/api/v1/lecturer/createLecturer', {
@@ -19,7 +19,7 @@ export const updateLecturer = async (id: string, lecturerData: Partial<BackendLe
     body: lecturerData
   }) as ApiResponse<BackendLecturer>;
 };
-
+  
 export const deleteLecturer = async (id: string) => {
   return await apiClient(`/api/v1/lecturer/deleteALecturer/${id}`, {
     method: 'PATCH'

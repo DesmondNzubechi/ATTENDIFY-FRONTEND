@@ -40,7 +40,7 @@ export default function Overview() {
     fetchSessions();
   }, [fetchStudents, fetchCourses, fetchAllLecturers, fetchAttendance, fetchSessions]);
 
-  const handleAddStudent = (newStudent: any) => {
+  const handleAddStudent = (newStudent) => {
     setIsSuccessDialogOpen(true);
   };
 

@@ -5,7 +5,7 @@ import { ApiResponse, BackendAttendance, AttendanceStatus } from "@/types/api";
 export interface AttendanceRecord {
   id: string;
   studentId: string;
-  courseId: string;
+  course: string;
   sessionId: string;
   date: string;
   status: 'present' | 'absent' | 'not-marked';
@@ -33,19 +33,19 @@ export interface AttendanceSession {
 }
 
 export interface CreateAttendanceData {
-  courseId: string;
-  acedemicSessionId: string;
+  course: string;
+  acedemicSession: string;
   semester: string;
-  level: string;
+  level: string; 
 }
 
 export interface MarkAttendanceData {
   studentId: string;
   status: 'present' | 'absent';
   level?: string;
-  regNo?: string;
+  regNo?: string; 
 }
-
+ 
 export const attendanceService = {
   getAllAttendance: async (): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/fetchAllAttendance");

@@ -11,7 +11,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
+  TableHeader, 
   TableRow,
 } from "@/components/ui/table";
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
@@ -100,7 +100,7 @@ export default function Lecturers() {
         });
       } finally {
         setIsDeleteDialogOpen(false);
-        setLecturerToDelete(null);
+        setLecturerToDelete("");
       }
     }
   };

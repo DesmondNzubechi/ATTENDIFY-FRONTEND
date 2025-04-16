@@ -16,13 +16,15 @@ import { useToast } from '@/hooks/use-toast';
 import { attendanceService } from '@/services/api/attendanceService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import autoTable from 'jspdf-autotable'; 
 
 export const AttendanceTable = () => {
   const { selectedSession, markAttendance, setError, updateSession, activateSession, deactivateSession } = useAttendanceStore();
   const { toast } = useToast();
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-
+ // Create export options menu
+ const [showExportOptions, setShowExportOptions] = useState<boolean>(false);
+ 
   const handleMarkAttendance = async (studentId: string, status: 'present' | 'absent') => {
     if (!selectedSession) return;
     
@@ -85,7 +87,7 @@ export const AttendanceTable = () => {
     }
     setIsStatusDialogOpen(false);
   };
-
+ 
   // Function to export attendance as PDF
   const exportToPDF = () => {
     if (!selectedSession) return;
@@ -130,7 +132,7 @@ export const AttendanceTable = () => {
       });
       
       return row;
-    });
+    }); 
     
     // Create table
     autoTable(doc, {
@@ -277,9 +279,6 @@ export const AttendanceTable = () => {
 
   const attendanceDates = generateAttendanceColumns();
 
-  // Create export options menu
-  const [showExportOptions, setShowExportOptions] = useState(false);
-
   return (
     <>
       <Card className="lg:col-span-8">
@@ -292,7 +291,7 @@ export const AttendanceTable = () => {
               <p><span className="font-medium">Course Title:</span> {selectedSession.course}</p>
               <p><span className="font-medium">Level:</span> {selectedSession.level}</p>
               <p><span className="font-medium">Semester:</span> {selectedSession.semester}</p>
-              <p><span className="font-medium">Session:</span> {selectedSession.sessionName}</p>
+              <p><span className="font-medium">Session:</span> {selectedSession?.sessionName}</p>
             </div>
           </div>
         </CardHeader>
@@ -301,14 +300,14 @@ export const AttendanceTable = () => {
             <Table className="border">
               <TableHeader className="bg-gray-50">
                 <TableRow>
-                  <TableHead className="w-12 text-center border-r">#</TableHead>
-                  <TableHead className="border-r">Student Name</TableHead>
-                  <TableHead className="border-r">Registration Number</TableHead>
+                  <TableHead className="w-12 text-center border-r">S/N</TableHead>
+                  <TableHead className="border-r uppercase">Student Name</TableHead>
+                  <TableHead className="border-r uppercase">Registration Number</TableHead>
                   {attendanceDates.map((date, index) => (
                     <TableHead key={date} className="border-r text-center">
-                      {new Date(date).toLocaleDateString()}
+                      {/* {new Date(date).toLocaleDateString()} */}SIGN
                     </TableHead>
-                  ))}
+                   ))} 
                   <TableHead className="w-[180px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -317,7 +316,7 @@ export const AttendanceTable = () => {
                   return (
                     <TableRow key={student.id} className="border-b">
                       <TableCell className="text-center font-medium border-r">{index + 1}</TableCell>
-                      <TableCell className="border-r">{student.name}</TableCell>
+                      <TableCell className="border-r capitalize ">{student.name}</TableCell>
                       <TableCell className="border-r">{student.registrationNumber}</TableCell>
                       
                       {/* Generate 10 attendance cells */}
@@ -332,18 +331,28 @@ export const AttendanceTable = () => {
                           if (attendanceForDate.status === 'present') {
                             bgColorClass = 'bg-[#F2FCE2]'; // Soft green for present
                             statusDisplay = (
-                              <span className="flex items-center justify-center text-green-600">
-                                <CheckCircle size={12} className="mr-1" />
+                              <span className="flex   text-green-600">
+                                <CheckCircle size={12} className="mr-1 mt-2" />
+                                <div className='flex flex-col'>
                                 Present
+                                <span className='text-[8px] self-col '>
+                                {attendanceForDate.time}
+                              </span>
+                                </div>
+                            
                               </span>
                             );
                           } else if (attendanceForDate.status === 'absent') {
                             bgColorClass = 'bg-[#ea384c]/10'; // Light red for absent
                             statusDisplay = (
-                              <span className="flex items-center justify-center text-[#ea384c]">
-                                <XCircle size={12} className="mr-1" />
+                              <span className="flex items-cente justify-center text-[#ea384c]">
+                                <XCircle size={12} className="mr-1 mt-2 " />
+                                <div className='flex flex-col'>
                                 Absent
-                                
+                                <span className='text-[8px] self-col '>
+                                {attendanceForDate.time}
+                              </span>
+                                </div>
                               </span>
                             );
                           }

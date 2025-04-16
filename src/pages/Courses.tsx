@@ -17,6 +17,8 @@ import {
 import { AddCourseDialog } from '@/components/dashboard/AddCourseDialog';
 import { useCoursesStore } from '@/stores/useCoursesStore';
 import { coursesService } from '@/services/api/coursesService';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 export default function Courses() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,10 +41,19 @@ export default function Courses() {
     fetchCourses();
   }, [fetchCourses]);
 
-  const handleDeleteCourse = async (courseId: string) => {
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+
+  const handleDeleteConfirmation = (courseId: string) => {
+    setCourseToDelete(courseId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
     try {
-      await coursesService.deleteCourse(courseId);
-      deleteCourseFromStore(courseId);
+      await coursesService.deleteCourse(courseToDelete);
+      deleteCourseFromStore(courseToDelete);
       toast({
         title: "Course Deleted",
         description: "The course has been removed from the system.",
@@ -56,6 +67,8 @@ export default function Courses() {
       });
     }
   };
+
+
  
   const handleAddCourse = async (newCourse: any) => {
     try {
@@ -199,7 +212,7 @@ export default function Courses() {
                         </button>
                         <button 
                           className="text-red-500 hover:text-red-600"
-                          onClick={() => handleDeleteCourse(course.id)}
+                          onClick={() => handleDeleteConfirmation(course.id)}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -254,6 +267,25 @@ export default function Courses() {
         onOpenChange={setIsAddCourseOpen}
         onCourseAdded={handleAddCourse}
       />
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this course? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteCourse} 
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { BackendAttendance, StudentAttendance } from '@/types/api';
 import { attendanceService } from '@/services/api/attendanceService';
-
+ 
 export type AttendanceStudent = {
   id: string;
   name: string;

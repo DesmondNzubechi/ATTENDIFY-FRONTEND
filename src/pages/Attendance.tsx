@@ -13,6 +13,7 @@ import { useCoursesStore } from '@/stores/useCoursesStore';
 import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { CreateAttendanceData } from '@/services/api/attendanceService';
 
 export default function Attendance() {
   const { toast } = useToast();
@@ -25,7 +26,7 @@ export default function Attendance() {
     deleteSession,
     setError
   } = useAttendanceStore();
-
+ 
   const { 
     courses, 
     fetchCourses,
@@ -68,16 +69,11 @@ export default function Attendance() {
     fetchCourses();
     fetchSessions();
   }, [fetchAttendance, fetchCourses, fetchSessions]);
-
-  const handleActivateAttendance = async (data: any) => {
+ 
+  const handleActivateAttendance = async (data: CreateAttendanceData) => {
     try {
       // Format the data for the API 
-      const attendanceData = {
-        courseId: data.courseId,
-        acedemicSessionId: data.sessionId,
-        semester: data.semester,
-        level: data.level
-      };
+      const attendanceData ={...data, semester: data.semester.toLocaleLowerCase()};
 
       // Call the API to create a new attendance session
       await createAttendance(attendanceData);
@@ -231,7 +227,7 @@ export default function Attendance() {
         onOpenFilter={() => setIsFilterOpen(true)}
         onOpenActivateAttendance={() => setIsActivateAttendanceOpen(true)}
       />
- 
+  
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
         <AttendanceSessionsList 
           filteredSessions={filteredSessions} 
@@ -250,7 +246,7 @@ export default function Attendance() {
         }))}
         sessions={academicSessions.map(session => ({
           id: session.id,
-          name: session.sessionName
+          name: session.sessionName 
         }))}
       />
 
@@ -264,8 +260,8 @@ export default function Attendance() {
           id: session.id,
           name: session.sessionName
         }))}
-        onSelectAcademicSession={setSelectedAcademicSession}
-        selectedAcademicSession={selectedAcademicSession}
+        // onSelectAcademicSession={setSelectedAcademicSession}
+        // selectedAcademicSession={selectedAcademicSession}
       />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

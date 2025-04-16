@@ -18,6 +18,17 @@ import { AddSessionDialog } from '@/components/dashboard/AddSessionDialog';
 import { FilterModal, FilterOption } from '@/components/dashboard/FilterModal';
 import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
 import { academicSessionsService, addSessionData } from '@/services/api/academicSessionsService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
+
 
 export default function AcademicSessions() {
   const { 
@@ -35,6 +46,9 @@ export default function AcademicSessions() {
   const [isAddSessionOpen, setIsAddSessionOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { toast } = useToast();
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  
   
   const itemsPerPage = 10;
 
@@ -116,10 +130,18 @@ export default function AcademicSessions() {
     currentPage * itemsPerPage
   );
 
-  const handleDeleteSession = async (sessionId: string) => {
+  const handleDeletePrompt = (e: React.MouseEvent, sessionId: string) => {
+      e.stopPropagation();
+      setSessionToDelete(sessionId);
+      setIsDeleteDialogOpen(true);
+    };
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+
     try {
-      await academicSessionsService.deleteSession(sessionId);
-      deleteSessionFromStore(sessionId);
+      await academicSessionsService.deleteSession(sessionToDelete);
+      deleteSessionFromStore(sessionToDelete);
       toast({
         title: "Academic Session Deleted",
         description: "The academic session has been removed from the system.",
@@ -185,6 +207,7 @@ export default function AcademicSessions() {
 
   if (isLoading) {
     return (
+     
       <DashboardLayout>
         <div className="flex justify-center items-center h-[70vh]">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
@@ -196,6 +219,7 @@ export default function AcademicSessions() {
 
   if (error) {
     return (
+        
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-[70vh]">
           <p className="text-red-500 mb-4">Error loading academic sessions: {error}</p>
@@ -211,6 +235,7 @@ export default function AcademicSessions() {
   }
 
   return (
+    <>
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Academic Sessions</h1>
@@ -303,7 +328,7 @@ export default function AcademicSessions() {
                         </button>
                         <button 
                           className="text-red-500 hover:text-red-600"
-                          onClick={() => handleDeleteSession(session.id)}
+                          onClick={(e) => handleDeletePrompt(e, session.id)}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -366,6 +391,24 @@ export default function AcademicSessions() {
         onApplyFilters={handleApplyFilters}
         groups={['Status', 'Year']}
       />
-    </DashboardLayout>
+        </DashboardLayout>
+        
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the attendance session from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSession} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+        </>
   );
 }

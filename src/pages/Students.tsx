@@ -217,8 +217,8 @@ export default function Students() {
               <SelectValue placeholder="Level" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Levels</SelectItem>
-              {levels.map(level => (
+              <SelectItem value="100">All Levels</SelectItem>
+              {levels && levels?.map(level => (
                 <SelectItem key={level} value={level}>Level {level}</SelectItem>
               ))}
             </SelectContent>
@@ -228,8 +228,8 @@ export default function Students() {
               <SelectValue placeholder="Admission Year" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Years</SelectItem>
-              {admissionYears.map(year => (
+              <SelectItem value="2020">All Years</SelectItem>
+              {admissionYears && admissionYears?.map(year => (
                 <SelectItem key={year} value={year}>{year}</SelectItem>
               ))}
             </SelectContent>
