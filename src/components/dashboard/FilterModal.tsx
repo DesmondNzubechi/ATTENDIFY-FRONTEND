@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 export type FilterOption = {
   id: string;
@@ -19,6 +21,9 @@ interface FilterModalProps {
   options: FilterOption[];
   onApplyFilters: (filteredOptions: FilterOption[]) => void;
   groups?: string[];
+  academicSessions?: { id: string, name: string }[];
+  onSelectAcademicSession?: (id: string) => void;
+  selectedAcademicSession?: string;
 }
 
 export function FilterModal({
@@ -28,10 +33,14 @@ export function FilterModal({
   options,
   onApplyFilters,
   groups = [],
+  academicSessions = [],
+  onSelectAcademicSession,
+  selectedAcademicSession = '',
 }: FilterModalProps) {
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>(options);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState<string | null>(groups.length > 0 ? groups[0] : null);
+  const [localSelectedSession, setLocalSelectedSession] = useState(selectedAcademicSession);
 
   const handleCheckboxChange = (id: string) => {
     setFilterOptions(
@@ -43,7 +52,14 @@ export function FilterModal({
 
   const handleApplyFilters = () => {
     onApplyFilters(filterOptions);
+    if (onSelectAcademicSession && localSelectedSession) {
+      onSelectAcademicSession(localSelectedSession);
+    }
     onOpenChange(false);
+  };
+
+  const handleAcademicSessionChange = (value: string) => {
+    setLocalSelectedSession(value);
   };
 
   const filteredOptions = filterOptions.filter((option) =>
@@ -77,6 +93,28 @@ export function FilterModal({
                   {group}
                 </Button>
               ))}
+            </div>
+          )}
+
+          {academicSessions.length > 0 && onSelectAcademicSession && (
+            <div className="space-y-2">
+              <Label htmlFor="academic-session">Academic Session</Label>
+              <Select 
+                value={localSelectedSession} 
+                onValueChange={handleAcademicSessionChange}
+              >
+                <SelectTrigger id="academic-session">
+                  <SelectValue placeholder="Select Academic Session" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Sessions</SelectItem>
+                  {academicSessions.map((session) => (
+                    <SelectItem key={session.id} value={session.id}>
+                      {session.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

@@ -22,6 +22,7 @@ export default function Attendance() {
     error, 
     fetchAttendance, 
     createAttendance,
+    deleteSession,
     setError
   } = useAttendanceStore();
 
@@ -41,6 +42,7 @@ export default function Attendance() {
   const [isActivateAttendanceOpen, setIsActivateAttendanceOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   
   // Additional filters
   const [selectedLevel, setSelectedLevel] = useState('');
@@ -98,6 +100,34 @@ export default function Attendance() {
     setFilterOptions(updatedFilters);
   };
 
+  // Function to handle session deletion
+  const handleDeletePrompt = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!sessionToDelete) return;
+    
+    try {
+      await deleteSession(sessionToDelete);
+      toast({
+        title: "Session Deleted",
+        description: "The attendance session has been deleted successfully.",
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete session');
+      toast({
+        title: "Error",
+        description: "Failed to delete session. Please try again.",
+        variant: "destructive"
+      });
+    }
+    
+    setIsDeleteDialogOpen(false);
+    setSessionToDelete(null);
+  };
+
   // Get available levels
   const getLevels = () => {
     const levels = new Set<string>();
@@ -138,9 +168,7 @@ export default function Attendance() {
         (course.courseName === session.course || course.courseCode === session.courseCode)
       );
       
-      const matchesSession = !selectedAcademicSession || academicSessions.some(s => 
-        s.id === selectedAcademicSession && s.sessionName === session.sessionName
-      );
+      const matchesSession = !selectedAcademicSession || session.sessionName === academicSessions.find(s => s.id === selectedAcademicSession)?.sessionName;
       
       const matchesSemester = !selectedSemester || session.semester.toLowerCase() === selectedSemester.toLowerCase();
       
@@ -205,7 +233,10 @@ export default function Attendance() {
       />
  
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-        <AttendanceSessionsList filteredSessions={filteredSessions} />
+        <AttendanceSessionsList 
+          filteredSessions={filteredSessions} 
+          onDelete={handleDeletePrompt}
+        />
         <AttendanceTable />
       </div>
   
@@ -229,7 +260,33 @@ export default function Attendance() {
         options={filterOptions}
         onApplyFilters={handleApplyFilters}
         groups={['Level', 'Semester', 'Status']}
+        academicSessions={academicSessions.map(session => ({
+          id: session.id,
+          name: session.sessionName
+        }))}
+        onSelectAcademicSession={setSelectedAcademicSession}
+        selectedAcademicSession={selectedAcademicSession}
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this attendance session? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete} 
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

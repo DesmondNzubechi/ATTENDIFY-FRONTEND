@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAttendanceStore } from '@/stores/useAttendanceStore';
 
@@ -12,41 +11,83 @@ export function PerformanceChart() {
   useEffect(() => {
     if (sessions.length === 0) return;
 
-    // Extract last 6-9 courses based on creation date
+    // Sort sessions by date (newest to oldest)
     const sortedSessions = [...sessions].sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
-    ).slice(0, 9);
+    );
+
+    // Limit based on time range
+    let filteredSessions = sortedSessions;
+    const currentDate = new Date();
+    
+    if (timeRange === 'week') {
+      // Get sessions from the last 7 days
+      const oneWeekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filteredSessions = sortedSessions.filter(session => 
+        new Date(session.date) >= oneWeekAgo
+      );
+      
+      // Take at most 7 sessions
+      filteredSessions = filteredSessions.slice(0, 7);
+    } else if (timeRange === 'month') {
+      // Get sessions from the last 30 days
+      const oneMonthAgo = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+      filteredSessions = sortedSessions.filter(session => 
+        new Date(session.date) >= oneMonthAgo
+      );
+      
+      // Take at most 9 sessions for readability
+      filteredSessions = filteredSessions.slice(0, 9);
+    } else {
+      // For year, take the most recent 12 sessions
+      filteredSessions = sortedSessions.slice(0, 12);
+    }
 
     // Process the attendance data
-    const processedData = sortedSessions.map(session => {
-      const today = new Date().toISOString().split('T')[0];
+    const processedData = filteredSessions.map(session => {
+      // Count present students
+      const presentCount = session.students.filter(student => 
+        Object.values(student.attendance).some(a => a.status === 'present')
+      ).length;
       
-      const presentCount = session.students.filter(s => {
-        return Object.values(s.attendance).some(a => a.status === 'present');
-      }).length;
+      // Count absent students
+      const absentCount = session.students.filter(student => 
+        Object.values(student.attendance).some(a => a.status === 'absent')
+      ).length;
       
-      const absentCount = session.students.filter(s => {
-        return Object.values(s.attendance).some(a => a.status === 'absent');
-      }).length;
+      // Count unmarked (total - (present + absent))
+      const totalStudents = session.students.length;
+      const unmarkedCount = totalStudents - (presentCount + absentCount);
       
       return {
-        month: session.course.substring(0, 3),
-        primary: presentCount,
-        secondary: absentCount,
+        month: getCourseAbbreviation(session.course),
+        present: presentCount,
+        absent: absentCount,
+        unmarked: unmarkedCount,
         course: session.course,
-        courseCode: session.courseCode
+        courseCode: session.courseCode,
+        total: totalStudents
       };
     });
 
-    setData(processedData);
+    setData(processedData.reverse()); // Reverse to show oldest to newest (left to right)
   }, [sessions, timeRange]);
+
+  // Function to get course abbreviation
+  const getCourseAbbreviation = (courseName: string) => {
+    // If course is short (less than 4 chars), use it as is
+    if (courseName.length <= 4) return courseName;
+    
+    // Otherwise create abbreviation (first 3 chars)
+    return courseName.substring(0, 3);
+  };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div> 
-          <CardTitle className="text-base font-medium">Performance</CardTitle>
-          <CardDescription className="text-xs">Student attendance performance</CardDescription>
+          <CardTitle className="text-base font-medium">Attendance Performance</CardTitle>
+          <CardDescription className="text-xs">Student attendance statistics</CardDescription>
         </div>
         <div className="flex items-center text-xs space-x-4">
           <button 
@@ -72,19 +113,23 @@ export function PerformanceChart() {
       <CardContent>
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.length > 0 ? data : []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis 
                 dataKey="month" 
                 tick={{ fontSize: 12 }} 
                 tickLine={false} 
-                axisLine={false}
-                tickFormatter={(value) => value}
+                axisLine={false} 
               />
               <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <Tooltip 
                 formatter={(value, name) => {
-                  const formattedName = name === 'primary' ? 'Present' : 'Absent';
+                  let formattedName = name;
+                  switch (name) {
+                    case 'present': formattedName = 'Present'; break;
+                    case 'absent': formattedName = 'Absent'; break;
+                    case 'unmarked': formattedName = 'Not Marked'; break;
+                  }
                   return [value, formattedName];
                 }}
                 labelFormatter={(label, payload) => {
@@ -94,8 +139,10 @@ export function PerformanceChart() {
                   return label;
                 }}
               />
-              <Bar dataKey="secondary" fill="#ef4444" name="Absent" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="primary" fill="#22c55e" name="Present" radius={[4, 4, 0, 0]} />
+              <Legend />
+              <Bar dataKey="absent" fill="#ef4444" name="Absent" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="present" fill="#22c55e" name="Present" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="unmarked" fill="#9ca3af" name="Not Marked" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

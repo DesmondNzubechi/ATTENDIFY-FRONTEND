@@ -15,6 +15,8 @@ import { useAttendanceStore } from '@/stores/useAttendanceStore';
 import { useToast } from '@/hooks/use-toast';
 import { attendanceService } from '@/services/api/attendanceService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export const AttendanceTable = () => {
   const { selectedSession, markAttendance, setError, updateSession, activateSession, deactivateSession } = useAttendanceStore();
@@ -84,6 +86,165 @@ export const AttendanceTable = () => {
     setIsStatusDialogOpen(false);
   };
 
+  // Function to export attendance as PDF
+  const exportToPDF = () => {
+    if (!selectedSession) return;
+
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('FACULTY OF ENGINEERING', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text('DEPARTMENT OF ELECTRICAL ENGINEERING ATTENDANCE SHEET', doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+    
+    // Add course details
+    doc.setFontSize(10);
+    doc.text(`COURSE CODE: ${selectedSession.courseCode}    COURSE TITLE: ${selectedSession.course}    LEVEL: ${selectedSession.level}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+    doc.text(`SEMESTER: ${selectedSession.semester}    SESSION: ${selectedSession.sessionName}`, doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
+    
+    // Generate columns for attendance dates
+    const attendanceDates = generateAttendanceColumns();
+    
+    // Prepare table headers
+    const tableHeaders = [
+      ['#', 'Student Name', 'Registration Number', ...attendanceDates.map(date => new Date(date).toLocaleDateString())],
+    ];
+    
+    // Prepare table data
+    const tableData = selectedSession.students.map((student, index) => {
+      const row = [
+        (index + 1).toString(),
+        student.name,
+        student.registrationNumber
+      ];
+      
+      // Add attendance status for each date
+      attendanceDates.forEach(date => {
+        const attendanceForDate = student.attendance[date];
+        if (attendanceForDate) {
+          row.push(attendanceForDate.status === 'present' ? 'Present' : 'Absent');
+        } else {
+          row.push('');
+        }
+      });
+      
+      return row;
+    });
+    
+    // Create table
+    autoTable(doc, {
+      head: tableHeaders,
+      body: tableData,
+      startY: 40,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 1 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      didDrawCell: (data) => {
+        // Color cells based on attendance status
+        if (data.section === 'body' && data.column.index >= 3) {
+          const cellValue = data.cell.text[0];
+          if (cellValue === 'Present') {
+            data.cell.styles.fillColor = [232, 255, 232];
+          } else if (cellValue === 'Absent') {
+            data.cell.styles.fillColor = [255, 232, 232];
+          }
+        }
+      }
+    });
+    
+    // Save the PDF
+    doc.save(`${selectedSession.courseCode}_Attendance_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast({
+      title: "Export Successful",
+      description: "Attendance sheet has been exported as PDF.",
+    });
+  };
+
+  // Function to export attendance as DOCX
+  const exportToWord = () => {
+    if (!selectedSession) return;
+    
+    // Create a blob of HTML that will be converted to Word format
+    const attendanceDates = generateAttendanceColumns();
+    
+    let tableHTML = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Attendance Sheet</title>
+        <style>
+          table {border-collapse: collapse; width: 100%;}
+          th, td {border: 1px solid #ddd; padding: 8px; text-align: left;}
+          th {background-color: #f2f2f2;}
+          .present {background-color: #e8ffe8;}
+          .absent {background-color: #ffe8e8;}
+          h1, h2, h3 {text-align: center;}
+        </style>
+      </head>
+      <body>
+        <h1>FACULTY OF ENGINEERING</h1>
+        <h2>DEPARTMENT OF ELECTRICAL ENGINEERING ATTENDANCE SHEET</h2>
+        <h3>COURSE CODE: ${selectedSession.courseCode} | COURSE TITLE: ${selectedSession.course} | LEVEL: ${selectedSession.level}</h3>
+        <h3>SEMESTER: ${selectedSession.semester} | SESSION: ${selectedSession.sessionName}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Registration Number</th>
+              ${attendanceDates.map(date => `<th>${new Date(date).toLocaleDateString()}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    selectedSession.students.forEach((student, index) => {
+      tableHTML += `<tr>
+        <td>${index + 1}</td>
+        <td>${student.name}</td>
+        <td>${student.registrationNumber}</td>
+      `;
+      
+      attendanceDates.forEach(date => {
+        const attendanceForDate = student.attendance[date];
+        if (attendanceForDate) {
+          if (attendanceForDate.status === 'present') {
+            tableHTML += `<td class="present">Present</td>`;
+          } else {
+            tableHTML += `<td class="absent">Absent</td>`;
+          }
+        } else {
+          tableHTML += `<td></td>`;
+        }
+      });
+      
+      tableHTML += `</tr>`;
+    });
+    
+    tableHTML += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    
+    // Create a Blob and download link
+    const blob = new Blob([tableHTML], { type: 'application/msword' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${selectedSession.courseCode}_Attendance_${new Date().toISOString().split('T')[0]}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export Successful",
+      description: "Attendance sheet has been exported as Word document.",
+    });
+  };
+
   if (!selectedSession) {
     return (
       <Card className="lg:col-span-8">
@@ -107,7 +268,7 @@ export const AttendanceTable = () => {
   const generateAttendanceColumns = () => {
     // Create an array of 10 dates, starting from today and going backward
     const today = new Date();
-    return Array.from({ length: 6 }, (_, index) => {
+    return Array.from({ length: 10 }, (_, index) => {
       const date = new Date(today);
       date.setDate(today.getDate() - index);
       return date.toISOString().split('T')[0];
@@ -115,6 +276,9 @@ export const AttendanceTable = () => {
   };
 
   const attendanceDates = generateAttendanceColumns();
+
+  // Create export options menu
+  const [showExportOptions, setShowExportOptions] = useState(false);
 
   return (
     <>
@@ -220,10 +384,40 @@ export const AttendanceTable = () => {
           </div>
         </CardContent>
         <CardFooter className="flex p-3 justify-between items-center">
-          <Button variant="outline" className="gap-2">
-            <FileDown size={16} />
-            Export
-          </Button>
+          <div className="relative">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => setShowExportOptions(!showExportOptions)}
+            >
+              <FileDown size={16} />
+              Export
+            </Button>
+            {showExportOptions && (
+              <div className="absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                <div className="py-1">
+                  <button
+                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => {
+                      exportToPDF();
+                      setShowExportOptions(false);
+                    }}
+                  >
+                    Export as PDF
+                  </button>
+                  <button
+                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => {
+                      exportToWord();
+                      setShowExportOptions(false);
+                    }}
+                  >
+                    Export as Word
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <Button 
             onClick={handleToggleSessionStatusPrompt}
             variant={selectedSession.isActive ? "destructive" : "default"}

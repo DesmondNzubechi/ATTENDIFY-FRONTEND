@@ -18,6 +18,14 @@ import { AddStudentDialog } from '@/components/dashboard/AddStudentDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useStudentsStore } from '@/stores/useStudentsStore';
 import { addStudentData, studentsService } from '@/services/api/studentsService';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function Students() {
   const { 
@@ -33,6 +41,10 @@ export default function Students() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const itemsPerPage = 10;
 
@@ -41,13 +53,41 @@ export default function Students() {
     fetchStudents();
   }, [fetchStudents]);
 
-  const filteredStudents = students.filter(student => 
-    student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.level.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get unique levels from students
+  const levels = React.useMemo(() => {
+    const uniqueLevels = new Set<string>();
+    students.forEach(student => {
+      if (student.level) {
+        uniqueLevels.add(student.level);
+      }
+    });
+    return Array.from(uniqueLevels).sort();
+  }, [students]);
+
+  // Get unique admission years from students
+  const admissionYears = React.useMemo(() => {
+    const uniqueYears = new Set<string>();
+    students.forEach(student => {
+      if (student.admissionYear) {
+        uniqueYears.add(student.admissionYear);
+      }
+    });
+    return Array.from(uniqueYears).sort((a, b) => parseInt(b) - parseInt(a)); // Sort descending
+  }, [students]);
+
+  const filteredStudents = students.filter(student => {
+    const matchesSearch = 
+      student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.course && student.course.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      student.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.level && student.level.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesLevel = !selectedLevel || student.level === selectedLevel;
+    const matchesYear = !selectedYear || student.admissionYear === selectedYear;
+    
+    return matchesSearch && matchesLevel && matchesYear;
+  });
 
   const pageCount = Math.ceil(filteredStudents.length / itemsPerPage);
   const paginatedStudents = filteredStudents.slice(
@@ -55,10 +95,17 @@ export default function Students() {
     currentPage * itemsPerPage
   );
 
-  const handleDeleteStudent = async (studentId: string) => {
+  const handleDeleteConfirmation = (studentId: string) => {
+    setStudentToDelete(studentId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!studentToDelete) return;
+    
     try {
-      await studentsService.deleteStudent(studentId);
-      deleteStudentFromStore(studentId);
+      await studentsService.deleteStudent(studentToDelete);
+      deleteStudentFromStore(studentToDelete);
       toast({
         title: "Student Deleted",
         description: "The student has been removed from the system.",
@@ -71,6 +118,9 @@ export default function Students() {
         variant: "destructive"
       });
     }
+    
+    setIsDeleteDialogOpen(false);
+    setStudentToDelete(null);
   };
 
   const handleAddStudent = async (newStudent: addStudentData | any) => {
@@ -81,7 +131,7 @@ export default function Students() {
         regNo: newStudent.regNo,   
         level: newStudent.level || '100', 
         addmissionYear: newStudent.addmissionYear,
-fingerPrint: newStudent.regNo
+        fingerPrint: newStudent.regNo
       });
       
       // Add to store with the id from the response
@@ -114,6 +164,12 @@ fingerPrint: newStudent.regNo
       });
     }
   }; 
+
+  const handleResetFilters = () => {
+    setSelectedLevel('');
+    setSelectedYear('');
+    setSearchQuery('');
+  };
 
   if (isLoading) {
     return (
@@ -156,10 +212,33 @@ fingerPrint: newStudent.regNo
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2">
-            <Filter size={16} />
-            Filter
-          </Button>
+          <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Levels</SelectItem>
+              {levels.map(level => (
+                <SelectItem key={level} value={level}>Level {level}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Admission Year" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Years</SelectItem>
+              {admissionYears.map(year => (
+                <SelectItem key={year} value={year}>{year}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(selectedLevel || selectedYear || searchQuery) && (
+            <Button variant="outline" onClick={handleResetFilters}>
+              Reset Filters
+            </Button>
+          )}
           <Button 
             className="bg-blue-600 hover:bg-blue-700 gap-2"
             onClick={() => setIsAddStudentOpen(true)}
@@ -215,7 +294,7 @@ fingerPrint: newStudent.regNo
                         </button>
                         <button 
                           className="text-red-500 hover:text-red-600"
-                          onClick={() => handleDeleteStudent(student.id)}
+                          onClick={() => handleDeleteConfirmation(student.id)}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -270,6 +349,26 @@ fingerPrint: newStudent.regNo
         onOpenChange={setIsAddStudentOpen}
         onStudentAdded={handleAddStudent}
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this student? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteStudent} 
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
