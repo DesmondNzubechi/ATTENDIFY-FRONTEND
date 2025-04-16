@@ -16,14 +16,14 @@ export default function UserProfile() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: currentUser?.firstName || '',
-    lastName: currentUser?.lastName || '',
+    fullName: currentUser?.fullName || '',
+    //lastName: currentUser?.lastName || '',
     email: currentUser?.email || '',
-  });
+  }); 
   const [passwordData, setPasswordData] = useState({
-    oldPassword: '',
+    currentPassword: '',
     newPassword: '',
-    confirmPassword: '',
+    confirmNewPassword: '',
   });
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +38,7 @@ export default function UserProfile() {
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profileData.firstName || !profileData.lastName || !profileData.email) {
+    if (!profileData.fullName || !profileData.email) {
       toast({
         title: "Error",
         description: "All fields are required",
@@ -50,16 +50,14 @@ export default function UserProfile() {
     try {
       setIsUpdating(true);
       const response = await authService.updateProfile({
-        firstName: profileData.firstName,
-        lastName: profileData.lastName,
-        email: profileData.email,
+        newFullName: `${profileData.fullName}`,
+        newEmail: profileData.email,
       });
 
       if (currentUser) {
         setUser({
           ...currentUser,
-          firstName: profileData.firstName,
-          lastName: profileData.lastName,
+          fullName: profileData.fullName,
           email: profileData.email,
         });
       }
@@ -81,7 +79,7 @@ export default function UserProfile() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmNewPassword) {
       toast({
         title: "Error",
         description: "All fields are required",
@@ -90,7 +88,7 @@ export default function UserProfile() {
       return;
     }
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
       toast({
         title: "Error",
         description: "New passwords do not match",
@@ -102,14 +100,15 @@ export default function UserProfile() {
     try {
       setIsChangingPassword(true);
       await authService.changePassword({
-        oldPassword: passwordData.oldPassword,
+        currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
+        confirmNewPassword: passwordData.confirmNewPassword
       });
 
       setPasswordData({
-        oldPassword: '',
+        currentPassword: '',
         newPassword: '',
-        confirmPassword: '',
+        confirmNewPassword: '',
       });
 
       toast({
@@ -163,16 +162,16 @@ export default function UserProfile() {
               <CardContent>
                 <form onSubmit={handleUpdateProfile} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="firstName" className="text-sm font-medium">First Name</label>
+                    <label htmlFor="fullName" className="text-sm font-medium">Full Name</label>
                     <Input
-                      id="firstName"
-                      name="firstName"
-                      value={profileData.firstName}
+                      id="fullName"
+                      name="fullName"
+                      value={profileData.fullName}
                       onChange={handleProfileChange}
                     />
                   </div>
                   
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
                     <Input
                       id="lastName"
@@ -180,7 +179,7 @@ export default function UserProfile() {
                       value={profileData.lastName}
                       onChange={handleProfileChange}
                     />
-                  </div>
+                  </div> */}
                   
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -222,12 +221,12 @@ export default function UserProfile() {
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="oldPassword" className="text-sm font-medium">Current Password</label>
+                    <label htmlFor="currentPassword" className="text-sm font-medium">Current Password</label>
                     <Input
-                      id="oldPassword"
-                      name="oldPassword"
+                      id="currentPassword"
+                      name="currentPassword"
                       type="password"
-                      value={passwordData.oldPassword}
+                      value={passwordData.currentPassword}
                       onChange={handlePasswordChange}
                     />
                   </div>
@@ -244,12 +243,12 @@ export default function UserProfile() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm New Password</label>
+                    <label htmlFor="confirmNewPassword" className="text-sm font-medium">Confirm New Password</label>
                     <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
+                      id="confirmNewPassword"
+                      name="confirmNewPassword"
                       type="password"
-                      value={passwordData.confirmPassword}
+                      value={passwordData.confirmNewPassword}
                       onChange={handlePasswordChange}
                     />
                   </div>

@@ -11,16 +11,16 @@ import { authService } from '@/services/api/authService';
 export default function ResetPassword() {
   const { token } = useParams<{ token: string }>();
   const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
-
+  const navigate = useNavigate(); 
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newPassword || !confirmPassword) {
+    if (!newPassword || !confirmNewPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -29,7 +29,7 @@ export default function ResetPassword() {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (newPassword !== confirmNewPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match",
@@ -98,13 +98,13 @@ export default function ResetPassword() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
+                <label htmlFor="confirmNewPassword" className="text-sm font-medium">Confirm Password</label>
                 <Input
-                  id="confirmPassword"
+                  id="confirmNewPassword"
                   type="password"
                   placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
                   required
                 />
               </div>

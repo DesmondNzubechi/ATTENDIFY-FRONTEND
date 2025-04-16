@@ -3,8 +3,7 @@ import { create } from 'zustand';
 
 export type User = {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   role: string;
 };

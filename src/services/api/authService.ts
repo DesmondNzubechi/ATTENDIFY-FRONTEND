@@ -44,14 +44,14 @@ export const authService = {
     return await apiClient("/api/v1/auth/fetchMe");
   },
   
-  updateProfile: async (userData: Partial<User>) => {
+  updateProfile: async (userData: {newFullName: string, newEmail: string}) => {
     return await apiClient("/api/v1/auth/updateMe", {
       method: "PATCH",
       body: userData
     });
   },
   
-  changePassword: async (passwordData: { oldPassword: string; newPassword: string }) => {
+  changePassword: async (passwordData: { currentPassword: string; newPassword: string, confirmNewPassword: string }) => {
     return await apiClient("/api/v1/auth/changePassword", {
       method: "PATCH",
       body: passwordData
