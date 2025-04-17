@@ -41,7 +41,18 @@ export default function Login() {
       setIsSubmitting(true); 
       await login({email, password});
       navigate(from);
+
+      toast({
+        title: "Success",
+        description: "Login successful",
+      });
     } catch (error) { 
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to login. please try again.',
+        variant: "destructive"
+      });
       // Error is handled in the auth context
     } finally {
       setIsSubmitting(false);

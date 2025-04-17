@@ -44,8 +44,17 @@ export default function Register() {
       setIsSubmitting(true);
       await register({fullName, email, password, confirmPassword });
       navigate('/login');
-    } catch (error) {
-      // Error is handled in the auth context
+      toast({
+        title: "Success",
+        description: "Registration successful. Proceed to login",
+      });
+    } catch (error) { 
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to register. please try again.',
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
