@@ -284,14 +284,14 @@ export const AttendanceTable = () => {
       <Card className="lg:col-span-8">
         <CardHeader className="flex flex-col">
           <div className="text-center mb-4 flex flex-col justify-center items-center">
-            <h2 className="text-xl font-bold">FACULTY OF ENGINEERING</h2>
-            <h3 className="text-lg uppercase font-semibold">Department of Electrical Engineering Attendance Sheet</h3>
-            <div className="mt-2 flex flex-wrap uppercase items-center gap-2 justify-center">
-              <p><span className="font-medium">Course Code:</span> {selectedSession.courseCode}</p>
-              <p><span className="font-medium">Course Title:</span> {selectedSession.course}</p>
-              <p><span className="font-medium">Level:</span> {selectedSession.level}</p>
-              <p><span className="font-medium">Semester:</span> {selectedSession.semester}</p>
-              <p><span className="font-medium">Session:</span> {selectedSession?.sessionName}</p>
+            <h2 className="text-xl md:text-[25px] text-[15px] font-bold">FACULTY OF ENGINEERING</h2>
+            <h3 className="text-lg uppercase md:text-[20px] text-[11px] font-semibold">Department of Electrical Engineering Attendance Sheet</h3>
+            <div className="mt-2 flex flex-wrap uppercase items-center gap-1 md:gap-2 justify-center">
+              <p className='md:text-[15px] text-[10px]'><span className="font-medium ">Course Code:</span> {selectedSession.courseCode}</p>
+              <p  className='md:text-[15px] text-[10px]'><span className="font-medium">Course Title:</span> {selectedSession.course}</p>
+              <p  className='md:text-[15px] text-[10px]'><span className="font-medium">Level:</span> {selectedSession.level}</p>
+              <p  className='md:text-[15px] text-[10px]'><span className="font-medium">Semester:</span> {selectedSession.semester}</p>
+              <p  className='md:text-[15px] text-[10px]'><span className="font-medium">Session:</span> {selectedSession?.sessionName}</p>
             </div>
           </div>
         </CardHeader>
@@ -300,11 +300,11 @@ export const AttendanceTable = () => {
             <Table className="border">
               <TableHeader className="bg-gray-50">
                 <TableRow>
-                  <TableHead className="w-12 text-center border-r">S/N</TableHead>
-                  <TableHead className="border-r uppercase">Student Name</TableHead>
-                  <TableHead className="border-r uppercase">Registration Number</TableHead>
+                  <TableHead className="w-12 text-center md:text-[20px] text-[10px] border-r">S/N</TableHead>
+                  <TableHead className="border-r uppercase md:text-[12px] text-[7px]">Student Name</TableHead>
+                  <TableHead className="border-r md:text-[12px] text-[7px] uppercase">Registration Number</TableHead>
                   {attendanceDates.map((date, index) => (
-                    <TableHead key={date} className="border-r text-center">
+                    <TableHead key={date} className="border-r md:text-[12px] text-[7px] text-center">
                       {/* {new Date(date).toLocaleDateString()} */}SIGN
                     </TableHead>
                    ))} 
@@ -316,7 +316,7 @@ export const AttendanceTable = () => {
                   return (
                     <TableRow key={student.id} className="border-b">
                       <TableCell className="text-center font-medium border-r">{index + 1}</TableCell>
-                      <TableCell className="border-r capitalize ">{student.name}</TableCell>
+                      <TableCell className="border-r  capitalize ">{student.name}</TableCell>
                       <TableCell className="border-r">{student.registrationNumber}</TableCell>
                       
                       {/* Generate 10 attendance cells */}

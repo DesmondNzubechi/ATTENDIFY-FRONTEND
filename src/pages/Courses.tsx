@@ -122,28 +122,30 @@ export default function Courses() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Courses</h1>
-          <div className="flex gap-2">
+        <div className="flex justify-between flex-col md:flex-row items-center mb-6">
+          <h1 className="text-2xl uppercase font-bold">Courses</h1>
+          <div className="flex flex-col w-full md:w-fit md:flex-row gap-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search courses"
-                className="pl-8 w-[200px]"
+                className="pl-8 w-full md:w-[200px]"
                 disabled
               />
             </div>
-            <Button variant="outline" disabled className="gap-2">
+            <div className='flex'>
+            <Button variant="outline" disabled className="gap-2 md:w-fit w-full">
               <Filter size={16} />
               Filter
             </Button>
             <Button 
-              className="bg-blue-600 gap-2"
+              className="bg-blue-600 md:w-fit w-full gap-2"
               disabled
             >
               <PlusCircle size={16} />
               Add Course
             </Button>
+            </div>
           </div>
         </div>
   
@@ -193,29 +195,31 @@ export default function Courses() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Courses</h1>
-        <div className="flex gap-2">
-          <div className="relative">
+      <div className="flex justify-between flex-col md:flex-row mt-[40px] md:mt-0  items-center mb-6">
+        <h1 className="text-2xl uppercase font-bold">Courses</h1>
+        <div className="flex md:w-fit w-full gap-2 flex-col md:flex-row">
+          <div className="relative w-ful">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search courses"
-              className="pl-8 w-[200px]"
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2">
+          <div className='flex gap-2'>
+          <Button variant="outline" className="gap-2 w-full md:w-fit">
             <Filter size={16} />
             Filter
           </Button>
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            className="bg-blue-600 w-full md:w-fit hover:bg-blue-700 gap-2"
             onClick={() => setIsAddCourseOpen(true)}
           >
             <PlusCircle size={16} />
             Add Course
           </Button>
+          </div>
         </div>
       </div>
 

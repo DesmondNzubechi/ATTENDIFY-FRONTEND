@@ -155,33 +155,35 @@ export default function Lecturers() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Lecturers</h1>
-        <div className="flex gap-2">
+      <div className="flex justify-between mt-[40px] md:mt-0 flex-col md:flex-row items-center mb-6">
+        <h1 className="text-2xl uppercase font-bold">Lecturers</h1>
+        <div className="flex  w-full md:w-fit  flex-col md:flex-row gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search"
-              className="pl-8 w-[200px]"
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <div className='flex gap-2 '>
           <Button 
             variant="outline" 
-            className="gap-2"
+            className="gap-2 w-full md:w-fit"
             onClick={() => setIsFilterOpen(true)}
           >
             <Filter size={16} />
             Filter
           </Button>
           <Button 
-            className="gap-2"
+            className="gap-2  w-full  md:w-fit"
             onClick={() => setIsAddLecturerOpen(true)}
           >
             <Plus size={16} />
             Add Lecturer
           </Button>
+          </div>
         </div>
       </div>
 

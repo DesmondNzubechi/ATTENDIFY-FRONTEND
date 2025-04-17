@@ -56,11 +56,11 @@ export function StudentDetails({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium">Student Details</CardTitle>
-        <button className="text-xs text-blue-500"><Link to='/students'> View all</Link></button>
+        <button className="text-xs text-blue-500"><a href='/activities' className='text-xs text-blue-500'> View all</a></button>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <Table>
+          <Table> 
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>

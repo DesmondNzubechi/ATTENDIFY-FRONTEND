@@ -89,7 +89,7 @@ export function AddStudentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-w-[350px]">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">Add New Student</DialogTitle>
         </DialogHeader>

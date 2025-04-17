@@ -137,8 +137,8 @@ export default function UserProfile() {
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">My Profile</h1>
+        <div className="flex justify-between md:mt-0 mt-[40px] items-center mb-6">
+          <h1 className="text-3xl uppercase font-bold">My Profile</h1>
           <Button variant="destructive" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
@@ -146,9 +146,9 @@ export default function UserProfile() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="password">Password</TabsTrigger>
+          <TabsList className='md:w-fit w-full'>
+            <TabsTrigger value="profile" className='w-full md:w-fit'>Profile</TabsTrigger>
+            <TabsTrigger className='w-full md:w-fit' value="password">Password</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">

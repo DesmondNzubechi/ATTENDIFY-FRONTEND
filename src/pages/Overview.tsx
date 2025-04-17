@@ -70,10 +70,10 @@ export default function Overview() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Overview</h1>
+      <div className="flex justify-between mt-[40px] md:mt-0 flex-col md:flex-row items-center mb-6">
+        <h1 className="text-2xl uppercase font-bold">Overview</h1>
         <Button 
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 md:w-fit w-full hover:bg-blue-700"
           onClick={() => setIsAddStudentOpen(true)}
         >
           + Add new student

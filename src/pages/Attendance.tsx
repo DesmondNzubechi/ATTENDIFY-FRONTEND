@@ -225,7 +225,7 @@ export default function Attendance() {
         onOpenFilter={() => setIsFilterOpen(true)}
         onOpenActivateAttendance={() => setIsActivateAttendanceOpen(true)}
       />
-  
+   
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
         <AttendanceSessionsList 
           filteredSessions={filteredSessions} 

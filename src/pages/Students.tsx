@@ -223,20 +223,21 @@ export default function Students() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Students</h1>
-        <div className="flex gap-2">
+      <div className="flex justify-between flex-col md:flex-row mt-[40px] md:mt-0 items-center mb-6">
+        <h1 className="text-2xl uppercase font-bold">Students</h1>
+        <div className="flex gap-2 flex-col md:flex-row w-full md:w-fit">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search"
-              className="pl-8 w-[200px]"
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <div className='flex gap-2'>
           <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="md:w-fit">
               <SelectValue placeholder="Level" />
             </SelectTrigger>
             <SelectContent>
@@ -247,7 +248,7 @@ export default function Students() {
             </SelectContent>
           </Select>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="md:w-fit">
               <SelectValue placeholder="Admission Year" />
             </SelectTrigger>
             <SelectContent>
@@ -257,6 +258,8 @@ export default function Students() {
               ))}
             </SelectContent>
           </Select>
+          </div>
+        
           {(selectedLevel || selectedYear || searchQuery) && (
             <Button variant="outline" onClick={handleResetFilters}>
               Reset Filters

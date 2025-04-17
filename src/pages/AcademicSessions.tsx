@@ -277,33 +277,36 @@ export default function AcademicSessions() {
   return (
     <>
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Academic Sessions</h1>
-        <div className="flex gap-2">
+      <div className="flex justify-between flex-col md:flex-row items-center mt-[40px] md:mt-0 mb-6">
+        <h1 className="text-2xl uppercase font-bold">Academic Sessions</h1>
+        <div className="flex md:w-fit w-full gap-2 flex-col md:flex-row">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search sessions"
-              className="pl-8 w-[200px]"
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
-          <Button 
+            </div>
+            <div className='flex gap-2'>
+            <Button 
             variant="outline" 
-            className="gap-2"
+            className="gap-2 w-full md:w-fit"
             onClick={() => setIsFilterOpen(true)}
           >
             <Filter size={16} />
             Filter
           </Button>
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            className="bg-blue-600 w-full md:w-fit hover:bg-blue-700 gap-2"
             onClick={() => setIsAddSessionOpen(true)}
           >
             <PlusCircle size={16} />
             Add Session
           </Button>
+            </div>
+         
         </div>
       </div>
 

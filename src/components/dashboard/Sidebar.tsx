@@ -78,8 +78,8 @@ export function Sidebar() {
         )}
       >
         <div className="p-4 border-b border-sidebar-border">
-          <h1 className="text-xl font-bold text-sidebar-foreground flex items-center">
-            <GraduationCap className="mr-2" size={24} /> Attendify
+          <h1 className="text-xl font-bold text-sidebar-foreground uppercase flex items-center">
+            <GraduationCap className="mr-2  " size={24} /> Attendify
           </h1>
         </div>
         

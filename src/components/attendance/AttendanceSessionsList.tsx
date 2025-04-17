@@ -78,7 +78,7 @@ export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsL
       <Card className="lg:col-span-8">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
-            <span>Attendance Sessions</span>
+            <span className='text-[15px] md:text-[20px] '>Attendance Sessions</span>
             <Badge className="bg-blue-500">{filteredSessions.length} Sessions</Badge>
           </CardTitle>
         </CardHeader>

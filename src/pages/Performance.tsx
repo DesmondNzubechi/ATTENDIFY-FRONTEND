@@ -156,43 +156,45 @@ export default function Performance() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Performance</h1>
-        <div className="flex gap-2">
+      <div className="flex justify-between flex-col md:flex-row md:mt-0 mt-[40px] items-center mb-6">
+        <h1 className="text-2xl uppercase font-bold">Performance</h1>
+        <div className="flex md:flex-row flex-col md:w-fit w-full gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search"
-              className="pl-8 w-[200px]"
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <div className='flex gap-2 '>
           <Button 
             variant="outline" 
-            className="gap-2"
+            className="gap-2 w-full md:w-fit"
             onClick={() => setIsFilterOpen(true)}
           >
             <Filter size={16} />
             Filter
           </Button>
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            className="bg-blue-600 w-full md:w-fit hover:bg-blue-700 gap-2"
             onClick={handleExport}
           >
             <Download size={16} />
             Export
           </Button>
+          </div>
         </div>
       </div>
 
       {/* Chart controls */}
       <div className="flex flex-wrap gap-4 mb-6">
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-fit">
           <Button 
             variant={chartType === 'bar' ? 'default' : 'outline'} 
             onClick={() => setChartType('bar')}
-            className="gap-2"
+            className="gap-2 md:w-fit w-full "
           >
             <BarChartIcon size={16} />
             Bar Chart
@@ -200,14 +202,14 @@ export default function Performance() {
           <Button 
             variant={chartType === 'line' ? 'default' : 'outline'} 
             onClick={() => setChartType('line')}
-            className="gap-2"
+            className="gap-2 md:w-fit w-full"
           >
             <LineChartIcon size={16} />
             Line Chart
           </Button>
         </div>
         
-        <div className="w-[200px]">
+        {/* <div className="w-[200px]">
           <Select onValueChange={setFilterOption} defaultValue={filterOption}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by" />
@@ -218,7 +220,7 @@ export default function Performance() {
               <SelectItem value="level">Level</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

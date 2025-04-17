@@ -52,13 +52,13 @@ export default function Activities() {
         return (
           <DashboardLayout>
             <div className="space-y-4">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex md:flex-row flex-col justify-between items-center mb-6">
                 <h1 className="text-2xl uppercase font-bold">All activities</h1>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Search"
-                    className="pl-8 w-[200px]"
+                    className="pl-8 w-full md:w-[200px]"
                     disabled
                   />
                 </div>
@@ -95,14 +95,14 @@ export default function Activities() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex  md:flex-row flex-col justify-between items-center mt-[40px] md:mt-[] mb-6">
         <h1 className="text-2xl uppercase font-bold">All activities</h1>
-        <div className="flex gap-2">
+        <div className="flex md:w-fit w-full gap-2 md:flex-row flex-col">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search"
-              className="pl-8 w-[200px]"
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

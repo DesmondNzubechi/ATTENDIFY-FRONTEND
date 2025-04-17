@@ -18,33 +18,35 @@ export const SearchAndFilters = ({
   onOpenActivateAttendance 
 }: SearchAndFiltersProps) => {
   return (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold">Attendance</h1>
-      <div className="flex gap-2">
+    <div className="flex justify-between md:flex-row flex-col mt-[40px] md:mt-0  items-center mb-6">
+      <h1 className="text-2xl uppercase font-bold">Attendance</h1>
+      <div className="flex w-full md:w-fit flex-col md:flex-row gap-2"> 
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search attendance"
-            className="pl-8 w-[200px]"
+            className="pl-8 w-full md:w-[200px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <div className='flex gap-2'>
         <Button 
           variant="outline" 
-          className="gap-2"
+          className="gap-2 w-full md:w-fit"
           onClick={onOpenFilter}
         >
           <Filter size={16} />
           Filter
         </Button>
         <Button 
-          className="bg-blue-600 hover:bg-blue-700 gap-2"
+          className="bg-blue-600 w-full md:w-fit hover:bg-blue-700 gap-2"
           onClick={onOpenActivateAttendance}
         >
            <PlusCircle size={16} />
           Add Attendance
         </Button>
+        </div>
       </div>
     </div>
   );
