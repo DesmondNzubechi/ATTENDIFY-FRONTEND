@@ -11,7 +11,7 @@ const getAuthToken = (): string | null => {
 };
 
 export const apiClient = async (endpoint: string, options: RequestOptions = {}) => {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const baseUrl = import.meta.env.VITE_API_URL;
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
