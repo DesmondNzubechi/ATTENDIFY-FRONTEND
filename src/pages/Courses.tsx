@@ -18,6 +18,7 @@ import { AddCourseDialog } from '@/components/dashboard/AddCourseDialog';
 import { useCoursesStore } from '@/stores/useCoursesStore';
 import { coursesService } from '@/services/api/coursesService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { SkeletonRow } from '@/components/dashboard/SkeletonRow';
 
 
 export default function Courses() {
@@ -121,13 +122,58 @@ export default function Courses() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-[70vh]">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-          <span className="ml-2 text-blue-500">Loading courses...</span>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Courses</h1>
+          <div className="flex gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search courses"
+                className="pl-8 w-[200px]"
+                disabled
+              />
+            </div>
+            <Button variant="outline" disabled className="gap-2">
+              <Filter size={16} />
+              Filter
+            </Button>
+            <Button 
+              className="bg-blue-600 gap-2"
+              disabled
+            >
+              <PlusCircle size={16} />
+              Add Course
+            </Button>
+          </div>
         </div>
+  
+        <Card>
+          <CardHeader>
+            <CardTitle>Course List</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Course Name</TableHead>
+                  <TableHead>Course Code</TableHead>
+                  <TableHead>Level</TableHead>
+                  <TableHead>Semester</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(8)].map((_, i) => (
+                  <SkeletonRow key={i} />
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </DashboardLayout>
     );
   }
+  
 
   if (error) {
     return (

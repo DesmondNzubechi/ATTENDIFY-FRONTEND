@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { activityType, useActivitiesStore } from '@/stores/useActivitiesStore';
+import { ActivitySkeleton } from '@/components/dashboard/ActivitySkeleton';
 
 
 export default function Activities() {
@@ -47,16 +48,37 @@ export default function Activities() {
         }
       };
 
- if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex justify-center items-center h-[70vh]">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-          <span className="ml-2 text-blue-500">Loading Activities...</span>
-        </div>
-      </DashboardLayout>
-    );
-  }
+      if (isLoading) {
+        return (
+          <DashboardLayout>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl uppercase font-bold">All activities</h1>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search"
+                    className="pl-8 w-[200px]"
+                    disabled
+                  />
+                </div>
+              </div>
+      
+              <Card>
+                <CardHeader>
+                  <CardTitle>Activities</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <ActivitySkeleton key={index} />
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </DashboardLayout>
+        );
+      }
+      
 
 
   if (error) {

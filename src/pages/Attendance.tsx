@@ -14,6 +14,7 @@ import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { CreateAttendanceData } from '@/services/api/attendanceService';
+import { AttendanceSkeleton } from '@/components/dashboard/AttendanceSkeleton';
 
 export default function Attendance() {
   const { toast } = useToast();
@@ -197,10 +198,7 @@ export default function Attendance() {
   if (isLoading || coursesLoading || sessionsLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-[70vh]">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-          <span className="ml-2 text-blue-500">Loading attendance data...</span>
-        </div>
+        <AttendanceSkeleton />
       </DashboardLayout>
     );
   }

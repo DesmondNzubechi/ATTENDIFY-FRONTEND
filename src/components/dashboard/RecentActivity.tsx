@@ -58,18 +58,18 @@ export function RecentActivity() {
   const {activities, fetchAllActivities, isLoading, error, } = useActivitiesStore();
     const [searchQuery, setSearchQuery] = useState('');
   
-    // const { toast } = useToast();
+    const { toast } = useToast();
   
   
-    // useEffect(() => {
-    //   fetchAllActivities().catch(error => {
-    //     toast({
-    //       title: "Error",
-    //       description: error instanceof Error ? error.message : "Failed to fetch lecturers",
-    //       variant: "destructive",
-    //     });
-    //   });
-    // }, [fetchAllActivities, toast]);
+    useEffect(() => {
+      fetchAllActivities().catch(error => {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to fetch lecturers",
+          variant: "destructive",
+        });
+      });
+    }, [fetchAllActivities, toast]);
   
     const formatDate = (dateString: string) => {
       try {

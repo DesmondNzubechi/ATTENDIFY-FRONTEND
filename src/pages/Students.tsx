@@ -26,6 +26,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { StudentSkeleton } from '@/components/dashboard/StudentSkeleton';
 
 export default function Students() {
   const { 
@@ -174,13 +175,35 @@ export default function Students() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-[70vh]">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-          <span className="ml-2 text-blue-500">Loading students...</span>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Students</h1>
         </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Student Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Registration Number</TableHead>
+                  <TableHead>Level</TableHead>
+                  <TableHead>Admission Year</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <StudentSkeleton />
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </DashboardLayout>
     );
   }
+  
 
   if (error) {
     return (
