@@ -21,11 +21,11 @@ const transformLecturer = (backendLecturer: BackendLecturer): Lecturer => ({
   id: backendLecturer._id,
   name: backendLecturer.fullName,
   email: backendLecturer.email,
-  faculty: 'Engineering',
+  faculty: 'Engineering', 
   department: 'Electrical',
   avatar: '/placeholder.svg',
 });
-
+ 
 type LecturersState = {
   lecturers: Lecturer[];
   isLoading: boolean;

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Link, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -56,7 +56,7 @@ export function StudentDetails({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium">Student Details</CardTitle>
-        <button className="text-xs text-blue-500">View all</button>
+        <button className="text-xs text-blue-500"><Link to='/students'> View all</Link></button>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

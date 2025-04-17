@@ -120,6 +120,12 @@ export function Sidebar() {
             active={location.pathname === '/academic-sessions'} 
             to="/academic-sessions"
           />
+           <SidebarItem 
+            icon={Calendar} 
+            label="Activities" 
+            active={location.pathname === '/activities'} 
+            to="/activities"
+          />
           <SidebarItem 
             icon={PieChart} 
             label="Performance" 

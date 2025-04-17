@@ -89,7 +89,7 @@ export interface BackendAttendance {
   createdAt: string;
   updatedAt: string;
   __v: number;
-}
+} 
 
 // Academic Session Types
 export interface BackendAcademicSession {
@@ -102,3 +102,16 @@ export interface BackendAcademicSession {
   attendance: any[];
   __v?: number;
 }
+
+
+//activities Type
+export interface backendActivities{
+  userName: string
+  userRole: string
+  action: string
+  _id: string
+  createdAt: string
+  updatedAt:string
+  __v?: number;
+}
+

@@ -77,7 +77,7 @@ export default function Attendance() {
 
       // Call the API to create a new attendance session
       await createAttendance(attendanceData);
-      
+       
       toast({
         title: "Attendance Created",
         description: "Attendance session has been created successfully.",
@@ -90,7 +90,7 @@ export default function Attendance() {
         variant: "destructive"
       });
     }
-  };
+  }; 
 
   const handleApplyFilters = (updatedFilters: FilterOption[]) => {
     setFilterOptions(updatedFilters);
