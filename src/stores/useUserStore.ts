@@ -17,7 +17,7 @@ type UserState = {
   setError: (error: string | null) => void;
   logout: () => void;
 };
-
+ 
 export const useUserStore = create<UserState>((set) => ({
   currentUser: null,
   isLoading: true,
@@ -26,4 +26,4 @@ export const useUserStore = create<UserState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   logout: () => set({ currentUser: null }),
-}));
+})); 

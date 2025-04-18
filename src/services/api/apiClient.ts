@@ -2,12 +2,7 @@
 type RequestOptions = {
   method?: string;
   headers?: Record<string, string>;
-  body?: any;
-};
-
-// Get JWT token from localStorage
-const getAuthToken = (): string | null => {
-  return localStorage.getItem("auth_token");
+  body?: unknown;
 };
 
 export const apiClient = async (endpoint: string, options: RequestOptions = {}) => {
@@ -18,11 +13,6 @@ export const apiClient = async (endpoint: string, options: RequestOptions = {}) 
     ...options.headers,
   };
 
-  // Add auth token from localStorage if available
-  const authToken = getAuthToken();
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-  }
 
   const requestOptions: RequestInit = {
     method: options.method || 'GET',

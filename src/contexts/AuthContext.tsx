@@ -1,13 +1,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { authService } from "@/services/api/authService";
+import { authService, LoginCredentials, RegisterData } from "@/services/api/authService";
 import { useUserStore } from "@/stores/useUserStore";
 
 type AuthContextType = {
   currentUser: any;
   isLoading: boolean;
-  login: (credentials: any) => Promise<any>;
-  register: (userData: any) => Promise<any>;
+  login: (credentials: LoginCredentials) => Promise<any>;
+  register: (userData: RegisterData) => Promise<any>;
   logout: () => void;
 };
 
@@ -28,12 +28,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Authentication check failed:', error);
       setUser(null);
+      setError(error.message)
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: LoginCredentials) => {
     try { 
       setLoading(true);
       const response = await authService.login(credentials);
@@ -43,8 +44,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
   };
-
-  const register = async (userData: any) => {
+ 
+  const register = async (userData: RegisterData) => {
     try {
       setLoading(true);
       const response = await authService.register(userData);

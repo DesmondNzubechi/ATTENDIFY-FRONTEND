@@ -25,10 +25,6 @@ export const authService = {
       body: credentials,
     });
 
-    if (response.token) {
-      localStorage.setItem("auth_token", response.token);
-    }
-
     return response;
   },
 
@@ -67,10 +63,10 @@ export const authService = {
   forgotPassword: async (email: string) => {
     return await apiClient("/api/v1/auth/forgotPassword", {
       method: "POST",
-      body: { email },
+      body: { email }, 
     });
   },
-
+ 
   resetPassword: async (token: string, newPassword: string) => {
     return await apiClient(`/api/v1/auth/resetPassword/${token}`, {
       method: "PATCH",
@@ -91,7 +87,7 @@ export const authService = {
       method: "POST",
     });
   },
-
+ 
   makeUserAdmin: async (userId: string) => {
     return await apiClient(`/api/v1/auth/makeUserAdmin/${userId}`, {
       method: "PATCH",
