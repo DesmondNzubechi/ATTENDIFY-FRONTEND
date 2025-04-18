@@ -23,6 +23,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { PrivateRoute } from "./components/auth/PrivateRoute";
 import Activities from "./pages/Activities";
+import { ScrollToTop } from "./components/ScrollTop/ScrollTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ const App = () => (
           <Sonner />
           <StoreInitializer />
           <BrowserRouter>
+          <ScrollToTop/>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
