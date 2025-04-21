@@ -142,7 +142,6 @@ export const SearchAndFilters = ({
   onOpenActivateAttendance 
 }: SearchAndFiltersProps) => {
 
-  const { courses } = useCoursesStore();
   const { sessions: attendanceSession, setSelectedSession } = useAttendanceStore();
     const [level, setLevel] = useState('')
     const [academicSession, setAcademicSession] = useState('');
@@ -166,7 +165,7 @@ export const SearchAndFilters = ({
 
   // Get unique course names from the filtered attendance sessions
   const filteredCourses = Array.from(new Set(
-    filteredAttendanceSessions.map(session => session.course)
+    filteredAttendanceSessions.map(session => session.courseCode)
   ));
 
   useEffect(() => {
@@ -174,7 +173,7 @@ export const SearchAndFilters = ({
       session.sessionName === academicSession &&
       session.level === level &&
       session.semester === semester &&
-      session.course === theCourse
+      session.courseCode === theCourse
     );
     setSelectedSession(filtered)
   }, [academicSession, level, semester, theCourse, attendanceSession, setSelectedSession]);

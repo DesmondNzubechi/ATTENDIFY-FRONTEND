@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { FileDown, CheckCircle, XCircle, Clock, Power } from 'lucide-react';
+import { FileDown, CheckCircle, XCircle, Clock, Power, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import {
   Table,
@@ -427,6 +427,15 @@ export const AttendanceTable = () => {
               </div>
             )}
           </div>
+          <div className='flex gap-2'>
+          <Button 
+            onClick={handleToggleSessionStatusPrompt}
+            variant={"destructive"}
+            className="gap-2 bg-red-500"
+          >
+             <Trash2 size={16} />
+           Delete
+          </Button>
           <Button 
             onClick={handleToggleSessionStatusPrompt}
             variant={selectedSession.isActive ? "destructive" : "default"}
@@ -435,6 +444,7 @@ export const AttendanceTable = () => {
             <Power size={16} />
             {selectedSession.isActive ? "Deactivate" : "Activate"}
           </Button>
+          </div>
         </CardFooter>
       </Card>
 

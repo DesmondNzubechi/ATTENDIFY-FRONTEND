@@ -17,7 +17,7 @@ export default function Activities() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { toast } = useToast();
-  const itemsPerPage = 10;
+  //const itemsPerPage = 10;
 
   useEffect(() => {
     fetchAllActivities().catch(error => {
@@ -46,7 +46,29 @@ export default function Activities() {
         } catch (error) {
           return 'date unknown';
         }
-      };
+  };
+  
+  // Inside Activities component
+
+const itemsPerPage = 3;
+const [currentPage, setCurrentPage] = useState(1);
+
+// Filtered activities (if you want to add search later)
+const filteredActivities = activities.filter(activity =>
+  activity.userName.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+// Paginated slice
+const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
+const paginatedActivities = filteredActivities.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
+
+// Navigation handlers
+const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+const handleNext = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
 
       if (isLoading) {
         return (
@@ -129,28 +151,49 @@ export default function Activities() {
         <CardHeader>
           <CardTitle>Activities</CardTitle>
         </CardHeader>
-       <CardContent>
-              <div className="space-y-4">
-                {activities.map((activity: activityType) => (
-                  <div key={activity.id} className="flex gap-3">
-                    <Avatar className="h-10 w-10">
-                      <img 
-                        src='/placeholder.svg' 
-                                alt={activity.userName}
-                        className="object-cover"
-                      />
-                    </Avatar> 
-                    <div>
-                      <h4 className="text-sm font-medium">{activity.userName}</h4>
-                      <p className="text-xs text-gray-500">{activity.userRole} • Electrical Engineering</p>
-                      <p className="text-sm mt-1">{activity.action}</p>
-                            <p className="text-xs text-gray-500 mt-1">{formatDate(activity.date)} • { getTimeAgo(activity.date)}</p>
-                        </div>
-                        <hr />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+        <CardContent>
+  <div className="space-y-4">
+    {paginatedActivities.length === 0 ? (
+      <p className="text-center text-sm text-gray-500">No activities found.</p>
+    ) : (
+      paginatedActivities.map((activity: activityType) => (
+        <div key={activity.id} className="flex gap-3">
+          <Avatar className="h-10 w-10">
+            <img 
+              src="/placeholder.svg" 
+              alt={activity.userName}
+              className="object-cover"
+            />
+          </Avatar>
+          <div>
+            <h4 className="text-sm font-medium">{activity.userName}</h4>
+            <p className="text-xs text-gray-500">{activity.userRole} • Electrical Engineering</p>
+            <p className="text-sm mt-1">{activity.action}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {formatDate(activity.date)} • {getTimeAgo(activity.date)}
+            </p>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+
+  {/* Pagination Buttons */}
+  {totalPages > 1 && (
+    <div className="flex justify-between items-center mt-6">
+      <Button variant="outline" onClick={handlePrev} disabled={currentPage === 1}>
+        Previous
+      </Button>
+      <p className="text-sm text-gray-500">
+        Page {currentPage} of {totalPages}
+      </p>
+      <Button variant="outline" onClick={handleNext} disabled={currentPage === totalPages}>
+        Next
+      </Button>
+    </div>
+  )}
+</CardContent>
+
       </Card>
 
     
