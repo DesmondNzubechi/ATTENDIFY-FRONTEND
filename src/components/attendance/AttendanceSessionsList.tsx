@@ -110,7 +110,7 @@ export const AttendanceSessionsList = ({ filteredSessions }: AttendanceSessionsL
                     const absentCount = session.students?.filter(
                       s => s.attendance[today]?.status === 'absent'
                     ).length || 0;
-
+  
                     return (
                       <tr
                         key={session.id}

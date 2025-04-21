@@ -29,7 +29,7 @@ export function ActivateAttendanceDialog({
     level: '',
     semester: 'First Semester'
   });
-   
+    
   console.log("the form data", formData)
   const [errors, setErrors] = useState<Record<string, string>>({});
 

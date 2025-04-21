@@ -100,7 +100,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       console.error('Error fetching attendance:', error);
     } finally {
       set({ isLoading: false });
-    }
+    } 
   },
   setSessions: (sessions) => set({ sessions }),
   setSelectedSession: (session) => set({ selectedSession: session }),

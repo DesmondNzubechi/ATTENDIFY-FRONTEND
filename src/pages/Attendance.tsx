@@ -52,6 +52,7 @@ export default function Attendance() {
   const [selectedAcademicSession, setSelectedAcademicSession] = useState('');
   const [selectedSemester, setSelectedSemester] = useState('');
 
+
   // Setup filter options
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([
     { id: 'level-100', label: 'Level 100', checked: false, group: 'Level' },
@@ -71,6 +72,10 @@ export default function Attendance() {
     fetchSessions();
   }, [fetchAttendance, fetchCourses, fetchSessions]);
  
+
+
+
+  console.log("The attendance session", sessions)
   const handleActivateAttendance = async (data: CreateAttendanceData) => {
     try {
       // Format the data for the API 
@@ -227,10 +232,10 @@ export default function Attendance() {
       />
    
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-        <AttendanceSessionsList 
+        {/* <AttendanceSessionsList 
           filteredSessions={filteredSessions} 
           onDelete={handleDeletePrompt}
-        />
+        /> */}
         <AttendanceTable />
       </div>
   
@@ -246,7 +251,7 @@ export default function Attendance() {
           id: session.id,
           name: session.sessionName 
         }))}
-      />
+      /> 
 
       <FilterModal 
         open={isFilterOpen}
@@ -257,9 +262,9 @@ export default function Attendance() {
         academicSessions={academicSessions.map(session => ({
           id: session.id,
           name: session.sessionName
-        }))}
-        // onSelectAcademicSession={setSelectedAcademicSession}
-        // selectedAcademicSession={selectedAcademicSession}
+        }))} 
+        onSelectAcademicSession={setSelectedAcademicSession}
+        selectedAcademicSession={selectedAcademicSession}
       />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

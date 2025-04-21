@@ -17,7 +17,7 @@ import { attendanceService } from '@/services/api/attendanceService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; 
-
+ 
 export const AttendanceTable = () => {
   const { selectedSession, markAttendance, setError, updateSession, activateSession, deactivateSession } = useAttendanceStore();
   const { toast } = useToast();
