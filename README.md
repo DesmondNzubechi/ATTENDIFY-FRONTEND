@@ -172,7 +172,7 @@ Attendify uses a **Node.js + Express + Typescript** backend with **MongoDB** for
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Desmond Nzubechukwu**  
 Software Engineer | Creating Value and Solutions  
