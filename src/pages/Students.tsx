@@ -369,7 +369,7 @@ export default function Students() {
           )}
         </CardContent>
       </Card>
-
+ 
       <AddStudentDialog 
         open={isAddStudentOpen}
         onOpenChange={setIsAddStudentOpen}

@@ -1,6 +1,6 @@
-
 import { apiClient } from "./apiClient";
 import { ApiResponse, BackendAttendance, AttendanceStatus } from "@/types/api";
+import { addStudentData } from "./studentsService";
 
 export interface AttendanceRecord {
   id: string;
@@ -8,7 +8,7 @@ export interface AttendanceRecord {
   course: string;
   sessionId: string;
   date: string;
-  status: 'present' | 'absent' | 'not-marked';
+  status: "present" | "absent" | "not-marked";
   time?: string;
 }
 
@@ -25,10 +25,10 @@ export interface AttendanceSession {
     registrationNumber: string;
     attendance: {
       [date: string]: {
-        status: 'present' | 'absent' | 'not-marked';
+        status: "present" | "absent" | "not-marked";
         time?: string;
-      }
-    }
+      };
+    };
   }>;
 }
 
@@ -36,67 +36,108 @@ export interface CreateAttendanceData {
   course: string;
   acedemicSession: string;
   semester: string;
-  level: string; 
+  level: string;
 }
 
 export interface MarkAttendanceData {
   studentId?: string;
   status?: string;
   level: string;
-  regNo: string; 
+  regNo: string;
 }
- 
+
 export const attendanceService = {
   getAllAttendance: async (): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/fetchAllAttendance");
   },
-   
-  getAttendanceBySession: async (sessionId: string): Promise<ApiResponse<BackendAttendance>> => {
-    return await apiClient(`/api/v1/attendance/fetchAttendanceBySession/${sessionId}`);
+
+  getAttendanceBySession: async (
+    sessionId: string
+  ): Promise<ApiResponse<BackendAttendance>> => {
+    return await apiClient(
+      `/api/v1/attendance/fetchAttendanceBySession/${sessionId}`
+    );
   },
-  
-  createAttendance: async (attendanceData: CreateAttendanceData): Promise<ApiResponse<BackendAttendance>> => {
+
+  createAttendance: async (
+    attendanceData: CreateAttendanceData
+  ): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient("/api/v1/attendance/createAttendance", {
       method: "POST",
-      body: attendanceData
+      body: attendanceData,
     });
   },
-  
-  activateAttendance: async (attendanceId: string): Promise<ApiResponse<BackendAttendance>> => {
-    return await apiClient(`/api/v1/attendance/activateAttendance/${attendanceId}`, {
-      method: "PATCH"
-    });
+
+  activateAttendance: async (
+    attendanceId: string
+  ): Promise<ApiResponse<BackendAttendance>> => {
+    return await apiClient(
+      `/api/v1/attendance/activateAttendance/${attendanceId}`,
+      {
+        method: "PATCH",
+      }
+    );
   },
-  
-  deactivateAttendance: async (attendanceId: string): Promise<ApiResponse<BackendAttendance>> => {
-    return await apiClient(`/api/v1/attendance/deactivateAttendance/${attendanceId}`, {
-      method: "PATCH"
-    });
+
+  deactivateAttendance: async (
+    attendanceId: string
+  ): Promise<ApiResponse<BackendAttendance>> => {
+    return await apiClient(
+      `/api/v1/attendance/deactivateAttendance/${attendanceId}`,
+      {
+        method: "PATCH",
+      }
+    );
   },
-  
-  markAttendance: async (attendanceId: string, data: MarkAttendanceData): Promise<ApiResponse<BackendAttendance>> => {
-    return await apiClient(`/api/v1/attendance/markAttendance/${attendanceId}`, {
-      method: "PATCH",
-      body: data
-    });
+
+  markAttendance: async (
+    attendanceId: string,
+    data: MarkAttendanceData
+  ): Promise<ApiResponse<BackendAttendance>> => {
+    return await apiClient(
+      `/api/v1/attendance/markAttendance/${attendanceId}`,
+      {
+        method: "PATCH",
+        body: data,
+      }
+    );
   },
-  
-  markAbsent: async (attendanceId: string, data: MarkAttendanceData): Promise<ApiResponse<BackendAttendance>> => {
+
+  markAbsent: async (
+    attendanceId: string,
+    data: MarkAttendanceData
+  ): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/markAbsent/${attendanceId}`, {
       method: "PATCH",
-      body: data
+      body: data,
     });
   },
-    
+
+  addCarryoverStudent: async (
+    attendanceId: string,
+    data: addStudentData
+  ): Promise<ApiResponse<BackendAttendance>> => {
+    return await apiClient(
+      `/api/v1/attendance/addCarryoverStudentToTheAttendance/${attendanceId}`,
+      {
+        method: "PATCH",
+        body: data,
+      }
+    );
+  },
+
   deleteAttendance: async (attendanceId: string): Promise<ApiResponse<any>> => {
-    return await apiClient(`/api/v1/attendance/deleteAttendance/${attendanceId}`, {
-      method: "DELETE"
-    });
+    return await apiClient(
+      `/api/v1/attendance/deleteAttendance/${attendanceId}`,
+      {
+        method: "DELETE",
+      }
+    );
   },
-  
+
   deleteAllAttendance: async (): Promise<ApiResponse<any>> => {
     return await apiClient("/api/v1/attendance/deleteAllAttendance", {
-      method: "DELETE"
+      method: "DELETE",
     });
-  }
-}; 
+  },
+};
