@@ -40,10 +40,10 @@ export interface CreateAttendanceData {
 }
 
 export interface MarkAttendanceData {
-  studentId: string;
-  status: 'present' | 'absent';
-  level?: string;
-  regNo?: string; 
+  studentId?: string;
+  status?: string;
+  level: string;
+  regNo: string; 
 }
  
 export const attendanceService = {
@@ -81,9 +81,10 @@ export const attendanceService = {
     });
   },
   
-  markAbsent: async (attendanceId: string): Promise<ApiResponse<BackendAttendance>> => {
+  markAbsent: async (attendanceId: string, data: MarkAttendanceData): Promise<ApiResponse<BackendAttendance>> => {
     return await apiClient(`/api/v1/attendance/markAbsent/${attendanceId}`, {
-      method: "PATCH"
+      method: "PATCH",
+      body: data
     });
   },
     
@@ -98,4 +99,4 @@ export const attendanceService = {
       method: "DELETE"
     });
   }
-};
+}; 

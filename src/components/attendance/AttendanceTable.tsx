@@ -19,23 +19,36 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; 
  
 export const AttendanceTable = () => {
-  const { selectedSession, markAttendance, setError, updateSession, activateSession, deactivateSession } = useAttendanceStore();
+  const { selectedSession, markAttendance, setError, updateSession, deleteSession, activateSession, deactivateSession } = useAttendanceStore();
   const { toast } = useToast();
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
  // Create export options menu
- const [showExportOptions, setShowExportOptions] = useState<boolean>(false);
+  const [showExportOptions, setShowExportOptions] = useState<boolean>(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  
  
   const handleMarkAttendance = async (studentId: string, status: 'present' | 'absent') => {
     if (!selectedSession) return;
     
     try {
       // Call the API to mark attendance
-      await attendanceService.markAttendance(selectedSession.id, {
-        studentId,
-        status,
-        level: selectedSession.level,
-        regNo: selectedSession.students.find(s => s.id === studentId)?.registrationNumber
-      }); 
+      if (status === "present") {
+        await attendanceService.markAttendance(selectedSession.id, {
+          level: selectedSession.level,
+          regNo: selectedSession.students.find(s => s.id === studentId)?.registrationNumber
+        }); 
+      }
+
+      if (status === "absent") {
+        await attendanceService.markAbsent(selectedSession.id, {
+          level: selectedSession.level,
+          regNo: selectedSession.students.find(s => s.id === studentId)?.registrationNumber
+        }); 
+      }
+    
+
+
       
       // Update local state
       markAttendance(selectedSession.id, studentId, status);
@@ -200,7 +213,7 @@ export const AttendanceTable = () => {
               <br>
               SIGN
             </tr>
-            <tr>PERCENTAGE</tr>
+            <tr>PERCENTAGE<tr>
           </thead>
           <tbody>
     `;
@@ -284,25 +297,36 @@ export const AttendanceTable = () => {
     if (!selectedSession) return [];
   
     const allDatesSet = new Set<string>();
-    
+  
+    // Gather all unique attendance dates
     selectedSession.students.forEach(student => {
       Object.keys(student.attendance || {}).forEach(date => {
         allDatesSet.add(date);
       });
     });
   
-    // Convert set to sorted array of dates
-    const sortedDates = Array.from(allDatesSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    // Sort the unique attendance dates
+    const sortedDates = Array.from(allDatesSet).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime()
+    );
   
-    // Add 5 future empty columns based on last existing date
+    // If we already have 6 or more dates, return the first 6
+    if (sortedDates.length >= 6) {
+      return sortedDates.slice(0, 6);
+    }
+  
+    // Fill in future dates to make up 6 columns
     const extraDates = [];
-    if (sortedDates.length > 0) {
-      const lastDate = new Date(sortedDates[sortedDates.length - 1]);
-      for (let i = 1; i <= 5; i++) {
-        const futureDate = new Date(lastDate);
-        futureDate.setDate(futureDate.getDate() + i);
-        extraDates.push(futureDate.toISOString().split('T')[0]); // Format as yyyy-mm-dd
-      }
+    const countToAdd = 6 - sortedDates.length;
+  
+    let baseDate = sortedDates.length > 0
+      ? new Date(sortedDates[sortedDates.length - 1])
+      : new Date();
+  
+    for (let i = 1; i <= countToAdd; i++) {
+      const futureDate = new Date(baseDate);
+      futureDate.setDate(futureDate.getDate() + i);
+      extraDates.push(futureDate.toISOString().split("T")[0]);
     }
   
     return [...sortedDates, ...extraDates];
@@ -310,6 +334,30 @@ export const AttendanceTable = () => {
   
 
   const attendanceDates = generateAttendanceColumns();
+
+    const handleDeletePrompt = (e: React.MouseEvent, sessionId: string) => {
+      e.stopPropagation();
+      setSessionToDelete(sessionId);
+      setIsDeleteDialogOpen(true);
+    };
+  
+    const handleDeleteSession = async () => {
+      if (!sessionToDelete) return;
+      try {
+        await deleteSession(sessionToDelete);
+        toast({
+          title: "Session Deleted",
+          description: "Attendance session has been deleted successfully.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete session. Please try again.",
+          variant: "destructive"
+        });
+      }
+      setIsDeleteDialogOpen(false);
+    };
 
   return (
     <>
@@ -475,11 +523,11 @@ export const AttendanceTable = () => {
           </div>
           <div className='flex gap-2'>
           <Button 
-            onClick={handleToggleSessionStatusPrompt}
+           onClick={(e) => handleDeletePrompt(e, selectedSession.id)}
             variant={"destructive"}
             className="gap-2 bg-red-500"
           >
-             <Trash2 size={16} />
+             <Trash2 size={16} /> 
            Delete
           </Button>
           <Button 
@@ -515,6 +563,22 @@ export const AttendanceTable = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the attendance session from the system.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteSession} className="bg-red-500 hover:bg-red-600">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
     </>
   );
 };
