@@ -4,7 +4,7 @@
 
 ---
 
-## 📖 Project Overview
+## Project Overview
 
 ### What is Attendify?
 
@@ -74,7 +74,7 @@ With Attendify, these problems are solved through digital transformation.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -92,7 +92,7 @@ src/
 
 ---
 
-## 🌐 API Communication
+##  API Communication
 
 ### API Client
 
@@ -145,7 +145,7 @@ npm run dev
 
 ---
 
-## 📤 Export Options
+##  Export Options
 
 - Attendance data can be exported as:
   - **PDF** using `html2pdf.js`
@@ -155,7 +155,7 @@ These features are available on the attendance page once the data is populated.
 
 ---
 
-## ✅ Future Improvements
+##  Future Improvements
 
 - Add student login interface for performance monitoring.
 - Add parent portal for tracking child’s attendance.
@@ -164,25 +164,18 @@ These features are available on the attendance page once the data is populated.
 
 ---
 
-## 📌 Backend
+## Backend
 
-Attendify uses a **Node.js + Express** backend with **MongoDB** for storing attendance data, user profiles, logs, and more.
+Attendify uses a **Node.js + Express + Typescript** backend with **MongoDB** for storing attendance data, user profiles, logs, and more.
 
-[Backend README →](#) *(Replace with the actual GitHub link)*
+[Backend README →](https://github.com/DesmondNzubechi/SMART-ATTENDANCE-SYSTEM-BACKEND)
 
 ---
 
 ## 👨‍💻 Author
 
 **Desmond Nzubechukwu**  
-Software Engineer | Product Builder  
-📫 [LinkedIn](https://linkedin.com/in/desmond-nzubechukwu)  
-🐦 [Twitter](https://twitter.com/desmond_dev)
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+Software Engineer | Creating Value and Solutions  
+[LinkedIn](https://www.linkedin.com/in/desmondnzubechukwu/)  
 
 ---
