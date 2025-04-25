@@ -35,7 +35,7 @@ export const AttendanceTable = () => {
         status,
         level: selectedSession.level,
         regNo: selectedSession.students.find(s => s.id === studentId)?.registrationNumber
-      });
+      }); 
       
       // Update local state
       markAttendance(selectedSession.id, studentId, status);
@@ -188,16 +188,19 @@ export const AttendanceTable = () => {
       <body>
         <h1>FACULTY OF ENGINEERING</h1>
         <h2>DEPARTMENT OF ELECTRICAL ENGINEERING ATTENDANCE SHEET</h2>
-        <h3>COURSE CODE: ${selectedSession.courseCode} | COURSE TITLE: ${selectedSession.course} | LEVEL: ${selectedSession.level}</h3>
-        <h3>SEMESTER: ${selectedSession.semester} | SESSION: ${selectedSession.sessionName}</h3>
+        <h3>COURSE CODE: ${selectedSession.courseCode.toUpperCase()} | COURSE TITLE: ${selectedSession.course.toUpperCase()} | LEVEL: ${selectedSession.level.toUpperCase()}</h3>
+        <h3>SEMESTER: ${selectedSession.semester.toUpperCase()} | SESSION: ${selectedSession.sessionName.toUpperCase()}</h3>
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Student Name</th>
-              <th>Registration Number</th>
+              <th>S/N</th>
+              <th>STUDENT NAME</th>
+              <th>REGISTRATION NUMBER</th>
               ${attendanceDates.map(date => `<th>${new Date(date).toLocaleDateString()}</th>`).join('')}
+              <br>
+              SIGN
             </tr>
+            <tr>PERCENTAGE</tr>
           </thead>
           <tbody>
     `;
@@ -267,15 +270,44 @@ export const AttendanceTable = () => {
   }
 
   // Generate columns for 10 attendance sessions
+  // const generateAttendanceColumns = () => {
+  //   // Create an array of 10 dates, starting from today and going backward
+  //   const today = new Date();
+  //   return Array.from({ length: 10 }, (_, index) => {
+  //     const date = new Date(today);
+  //     date.setDate(today.getDate() - index);
+  //     return date.toISOString().split('T')[0];
+  //   });
+  // };
+
   const generateAttendanceColumns = () => {
-    // Create an array of 10 dates, starting from today and going backward
-    const today = new Date();
-    return Array.from({ length: 10 }, (_, index) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - index);
-      return date.toISOString().split('T')[0];
+    if (!selectedSession) return [];
+  
+    const allDatesSet = new Set<string>();
+    
+    selectedSession.students.forEach(student => {
+      Object.keys(student.attendance || {}).forEach(date => {
+        allDatesSet.add(date);
+      });
     });
+  
+    // Convert set to sorted array of dates
+    const sortedDates = Array.from(allDatesSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  
+    // Add 5 future empty columns based on last existing date
+    const extraDates = [];
+    if (sortedDates.length > 0) {
+      const lastDate = new Date(sortedDates[sortedDates.length - 1]);
+      for (let i = 1; i <= 5; i++) {
+        const futureDate = new Date(lastDate);
+        futureDate.setDate(futureDate.getDate() + i);
+        extraDates.push(futureDate.toISOString().split('T')[0]); // Format as yyyy-mm-dd
+      }
+    }
+  
+    return [...sortedDates, ...extraDates];
   };
+  
 
   const attendanceDates = generateAttendanceColumns();
 
@@ -307,7 +339,10 @@ export const AttendanceTable = () => {
                     <TableHead key={date} className="border-r md:text-[12px] text-[7px] text-center">
                       {/* {new Date(date).toLocaleDateString()} */}SIGN
                     </TableHead>
-                   ))} 
+                  ))} 
+                   <TableHead className="border-r md:text-[12px] text-[7px] text-center">
+                      PERCENTAGE
+                    </TableHead>
                   <TableHead className="w-[180px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -365,6 +400,17 @@ export const AttendanceTable = () => {
                         );
                       })}
                       
+                      <TableCell className="border-r text-center">
+    {(() => {
+      const totalMarked = attendanceDates.length;
+      const totalPresent = attendanceDates.reduce((count, date) => {
+        return student.attendance[date]?.status === 'present' ? count + 1 : count;
+      }, 0);
+
+      const percentage = totalMarked > 0 ? ((totalPresent / totalMarked) * 100).toFixed(1) : "0.0";
+      return `${percentage}%`;
+    })()}
+  </TableCell>
                       <TableCell>
                         {selectedSession.isActive && (
                           <div className="flex space-x-1">

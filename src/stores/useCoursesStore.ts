@@ -45,7 +45,7 @@ export const useCoursesStore = create<CoursesState>((set) => ({
         }));
         
         set({ courses: formattedCourses });
-      }
+      } 
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to fetch courses' });
       console.error('Error fetching courses:', error);

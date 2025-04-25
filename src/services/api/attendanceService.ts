@@ -86,7 +86,7 @@ export const attendanceService = {
       method: "PATCH"
     });
   },
-  
+    
   deleteAttendance: async (attendanceId: string): Promise<ApiResponse<any>> => {
     return await apiClient(`/api/v1/attendance/deleteAttendance/${attendanceId}`, {
       method: "DELETE"

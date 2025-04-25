@@ -12,7 +12,7 @@ import {
   TableCell, 
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow, 
 } from "@/components/ui/table";
 import { AddCourseDialog } from '@/components/dashboard/AddCourseDialog';
 import { useCoursesStore } from '@/stores/useCoursesStore';
@@ -40,7 +40,7 @@ export default function Courses() {
 
   useEffect(() => {
     fetchCourses();
-  }, [fetchCourses]);
+  }, [fetchCourses, isAddCourseOpen]);
 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
@@ -97,6 +97,7 @@ export default function Courses() {
         title: "Course Added",
         description: "The course has been added successfully.",
       });
+     // setIsAddCourseOpen(false)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to add course');
       toast({
