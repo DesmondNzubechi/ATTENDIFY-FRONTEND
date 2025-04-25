@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
     data: T[];
   };
 }
-
+ 
 // Course Types
 export interface BackendCourse {
   _id: string;

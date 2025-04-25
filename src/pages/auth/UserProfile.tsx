@@ -9,12 +9,15 @@ import { useToast } from '@/hooks/use-toast';
 import { authService } from '@/services/api/authService';
 import { useUserStore } from '@/stores/useUserStore';
 import { LogOut, User, Key, Loader2 } from 'lucide-react';
-
+// import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '@radix-ui/react-alert-dialog';
+// import { AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 export default function UserProfile() {
   const { currentUser, setUser, logout } = useUserStore();
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isLogOutOpen, setIsLogOutOpen] = useState(false)
   const [profileData, setProfileData] = useState({
     fullName: currentUser?.fullName || '',
     //lastName: currentUser?.lastName || '',
@@ -124,7 +127,7 @@ export default function UserProfile() {
     } finally {
       setIsChangingPassword(false);
     }
-  };
+  }; 
 
   const handleLogout = () => {
     logout();
@@ -132,14 +135,14 @@ export default function UserProfile() {
       title: "Success",
       description: "Logged out successfully",
     });
-  };
+  }; 
 
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
         <div className="flex justify-between md:mt-0 mt-[40px] items-center mb-6">
           <h1 className="text-3xl uppercase font-bold">My Profile</h1>
-          <Button variant="destructive" onClick={handleLogout}>
+          <Button variant="destructive" onClick={() => setIsLogOutOpen(true)}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
@@ -272,6 +275,25 @@ export default function UserProfile() {
           </TabsContent>
         </Tabs>
       </div>
+       <AlertDialog open={isLogOutOpen} onOpenChange={setIsLogOutOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to Logout?.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleLogout} 
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                  Logout
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
     </DashboardLayout>
   );
 }

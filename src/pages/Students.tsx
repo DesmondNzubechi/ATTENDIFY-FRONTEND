@@ -136,8 +136,8 @@ export default function Students() {
       });
       
       // Add to store with the id from the response
-      if (response && response.data && response.data.data && response.data.data[0]) {
-        const addedStudent = response.data.data[0];
+      if (response && response.data && response.data.data && response.data.data) {
+        const addedStudent = response.data.data;
         addStudentToStore({
           id: addedStudent._id,
           firstName: newStudent.firstName,
@@ -150,7 +150,7 @@ export default function Students() {
           admissionYear: addedStudent.addmissionYear || new Date().getFullYear().toString(),
           avatar: '/placeholder.svg'
         });
-      }
+      } 
       
       toast({
         title: "Student Added Successfully!",

@@ -167,8 +167,8 @@ export default function AcademicSessions() {
       
       console.log("The response", response)
       // Add to store with the id from the response
-      if (response && response.data && response.data.data && response.data.data[0]) {
-        const addedSession = response.data.data[0];
+      if (response && response.data && response.data.data) {
+        const addedSession = response.data.data;
         addSessionToStore({
           id: addedSession._id,
           sessionName: addedSession.name,

@@ -30,7 +30,7 @@ level: ''
       ...prev,
       [name]: value
     }));
-    
+     
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({

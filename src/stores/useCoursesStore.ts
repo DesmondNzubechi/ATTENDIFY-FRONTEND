@@ -41,7 +41,7 @@ export const useCoursesStore = create<CoursesState>((set) => ({
           courseCode: course.courseCode,
           description: `${course.courseTitle} - ${course.semester}`,
           level: course.level,
-          semester: course.semester
+          semester: course.semester 
         }));
         
         set({ courses: formattedCourses });

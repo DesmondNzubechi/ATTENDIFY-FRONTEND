@@ -55,7 +55,7 @@ export default function Courses() {
 
   useEffect(() => {
     fetchCourses();
-  }, [fetchCourses, isAddCourseOpen]);
+  }, [fetchCourses]);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
@@ -99,12 +99,11 @@ export default function Courses() {
       if (
         response &&
         response.data &&
-        response.data.data &&
-        response.data.data[0]
+        response.data.data
       ) {
-        const addedCourse = response.data.data[0];
+        const addedCourse = response.data.data;
         addCourseToStore({
-          id: addedCourse._id,
+          id: addedCourse._id, 
           courseName: addedCourse.courseTitle,
           courseCode: addedCourse.courseCode,
           description: `${addedCourse.courseTitle} - ${addedCourse.semester}`,
@@ -112,7 +111,7 @@ export default function Courses() {
           semester: addedCourse.semester,
         });
       }
-
+ 
       toast({
         title: "Course Added",
         description: "The course has been added successfully.",
@@ -343,7 +342,7 @@ export default function Courses() {
 
       <AddCourseDialog
         open={isAddCourseOpen}
-        onOpenChange={setIsAddCourseOpen}
+        onOpenChange={setIsAddCourseOpen} 
         onCourseAdded={handleAddCourse}
       />
       <AlertDialog
