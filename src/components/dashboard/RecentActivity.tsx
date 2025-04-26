@@ -6,51 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { activityType, useActivitiesStore } from '@/stores/useActivitiesStore';
 import { Avatar } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
-// import { Avatar } from '@/components/ui/avatar';
 
-// type Activity = {
-//   id: string;
-//   user: {
-//     name: string;
-//     avatar?: string;
-//     role: string;
-//   };
-//   action: string;
-//   time: string;
-// };
-
-// const activities: Activity[] = [
-//   {
-//     id: '1',
-//     user: {
-//       name: 'Desmond Nyeko',
-//       avatar: '/placeholder.svg',
-//       role: 'Lecturer • Medicine Year Two'
-//     },
-//     action: 'Created a timetable for Medicine Year Two',
-//     time: '2 hours ago'
-//   },
-//   {
-//     id: '2',
-//     user: {
-//       name: 'Jane Kate',
-//       avatar: '/placeholder.svg',
-//       role: 'Lecturer • Fundamentals Accounting I'
-//     },
-//     action: 'Created a timetable for Accounting Year One',
-//     time: '5 hours ago'
-//   },
-//   {
-//     id: '3',
-//     user: {
-//       name: 'John Eze',
-//       avatar: '/placeholder.svg',
-//       role: 'Lecturer • Data Analysis'
-//     },
-//     action: 'Modified a class schedule for Data Science',
-//     time: '10 hours ago'
-//   }
-// ];
 
 
 export function RecentActivity() {
@@ -89,7 +45,10 @@ export function RecentActivity() {
             return 'date unknown';
           }
         };
-  
+        const sortedActivities = [...activities].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        
 
   return (
     <Card>
@@ -99,7 +58,7 @@ export function RecentActivity() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-           {activities.slice(0, 2).map((activity: activityType) => (
+           {sortedActivities.slice(0, 2).map((activity: activityType) => (
                            <div key={activity.id} className="flex gap-3">
                              <Avatar className="h-10 w-10">
                                <img 

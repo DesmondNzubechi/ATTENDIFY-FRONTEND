@@ -51,12 +51,21 @@ export default function Activities() {
   // Inside Activities component
 
 const itemsPerPage = 3;
-const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  //sorterd activities
+  const sortedActivities = [...activities].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  
 
 // Filtered activities (if you want to add search later)
-const filteredActivities = activities.filter(activity =>
-  activity.userName.toLowerCase().includes(searchQuery.toLowerCase())
+const filteredActivities = sortedActivities.filter(activity =>
+  activity.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  activity.userRole.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  activity.action.toLowerCase().includes(searchQuery.toLowerCase())
 );
+
 
 // Paginated slice
 const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
@@ -126,7 +135,11 @@ const handleNext = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages)
               placeholder="Search"
               className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1); // Reset to first page when searching
+              }}
+              
             />
           </div>
           {/* <Button 

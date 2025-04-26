@@ -51,7 +51,7 @@ export function StudentDetails({
       console.log('Delete student ID:', studentId);
     }
   };
-
+  
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -78,7 +78,7 @@ export function StudentDetails({
                   </TableCell>
                 </TableRow>
               ) : (
-                students.map((student) => (
+                students.slice(0, 4).map((student) => (
                   <TableRow key={student.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
