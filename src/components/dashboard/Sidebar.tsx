@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   UserCircle,
+  StepForwardIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -163,8 +164,14 @@ export function Sidebar() {
             active={location.pathname === "/profile"}
             to="/profile"
           />
-          <SidebarItem icon={Settings} label="Settings" />
-          <SidebarItem icon={HelpCircle} label="Help Center" />
+           <SidebarItem
+            icon={Settings}
+            label="Quick Guide"
+            active={location.pathname === "/quick-guide"}
+            to="/quick-guide"
+          />
+          {/* <SidebarItem icon={Settings} label="Settings" /> */}
+          {/* <SidebarItem icon={HelpCircle} label="Help Center" /> */}
         </div>
       </aside>
     </>

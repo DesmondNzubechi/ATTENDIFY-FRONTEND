@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import { PrivateRoute } from "./components/auth/PrivateRoute";
 import Activities from "./pages/Activities";
 import { ScrollToTop } from "./components/ScrollTop/ScrollTop";
+import QuickGuide from "./pages/QuickGuide";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/academic-sessions" element={<AcademicSessions />} />
               <Route path="/activities" element={<Activities />} />
               <Route path="/performance" element={<Performance />} />
+              <Route path="/quick-guide" element={<QuickGuide />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
