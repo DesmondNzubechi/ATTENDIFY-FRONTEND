@@ -1,26 +1,3 @@
-// import { defineConfig } from "vite";
-// import react from "@vitejs/plugin-react-swc";
-// import path from "path";
-// import { componentTagger } from "lovable-tagger";
-
-// // https://vitejs.dev/config/
-// export default defineConfig(({ mode }) => ({
-//   server: {
-//     host: "::",
-//     port: 8080,
-//   },
-//   plugins: [
-//     react(),
-//     mode === 'development' &&
-//     componentTagger(),
-//   ].filter(Boolean),
-//   resolve: {
-//     alias: {
-//       "@": path.resolve(__dirname, "./src"),
-//     },
-//   },
-// }));
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -39,9 +16,9 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'], // add any static assets
       manifest: {
-        name: 'My Vite React App',
-        short_name: 'MyApp',
-        description: 'My Vite React Progressive Web App',
+        name: 'ATTENDIFY',
+        short_name: 'ATTENDIFY',
+        description: 'Attendance management system',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
