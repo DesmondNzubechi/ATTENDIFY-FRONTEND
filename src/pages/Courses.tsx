@@ -276,12 +276,12 @@ export default function Courses() {
                     <TableCell>{course.semester || "Not specified"}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <button className="text-blue-500 hover:text-blue-600">
+                        {/* <button className="text-blue-500 hover:text-blue-600">
                           <Eye size={16} />
                         </button>
                         <button className="text-yellow-500 hover:text-yellow-600">
                           <Edit size={16} />
-                        </button>
+                        </button> */}
                         <button
                           className="text-red-500 hover:text-red-600"
                           onClick={() => handleDeleteConfirmation(course.id)}

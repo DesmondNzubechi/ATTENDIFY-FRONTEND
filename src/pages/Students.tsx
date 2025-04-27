@@ -315,9 +315,9 @@ export default function Students() {
                     <TableCell>{student.admissionYear}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <button className="text-yellow-500 hover:text-yellow-600">
+                        {/* <button className="text-yellow-500 hover:text-yellow-600">
                           <Eye size={16} />
-                        </button>
+                        </button> */}
                         <button 
                           className="text-red-500 hover:text-red-600"
                           onClick={() => handleDeleteConfirmation(student.id)}
