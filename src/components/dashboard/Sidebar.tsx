@@ -155,6 +155,12 @@ export function Sidebar() {
             active={location.pathname === "/performance"}
             to="/performance"
           />
+           <SidebarItem
+            icon={StepForwardIcon}
+            label="Quick Guide"
+            active={location.pathname === "/quick-guide"}
+            to="/quick-guide"
+          />
         </nav>
 
         <div className="p-3 border-t border-sidebar-border space-y-1">
@@ -164,14 +170,8 @@ export function Sidebar() {
             active={location.pathname === "/profile"}
             to="/profile"
           />
-           <SidebarItem
-            icon={Settings}
-            label="Quick Guide"
-            active={location.pathname === "/quick-guide"}
-            to="/quick-guide"
-          />
-          {/* <SidebarItem icon={Settings} label="Settings" /> */}
-          {/* <SidebarItem icon={HelpCircle} label="Help Center" /> */}
+          <SidebarItem icon={Settings} label="Settings" /> 
+          <SidebarItem icon={HelpCircle} label="Help Center" />
         </div>
       </aside>
     </>

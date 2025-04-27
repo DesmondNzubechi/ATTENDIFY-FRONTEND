@@ -42,8 +42,9 @@ import autoTable from "jspdf-autotable";
 import { AddStudentDialog } from "../dashboard/AddStudentDialog";
 import { addStudentData } from "@/services/api/studentsService";
 import { isToday } from "date-fns";
+import Navbar from "../Navbar";
 
-export const AttendanceTable = () => {
+export const PublicAttendanceTable = () => {
   const {
     selectedSession,
     setSelectedSession,
@@ -364,16 +365,6 @@ export const AttendanceTable = () => {
     );
   }
 
-  // Generate columns for 10 attendance sessions
-  // const generateAttendanceColumns = () => {
-  //   // Create an array of 10 dates, starting from today and going backward
-  //   const today = new Date();
-  //   return Array.from({ length: 10 }, (_, index) => {
-  //     const date = new Date(today);
-  //     date.setDate(today.getDate() - index);
-  //     return date.toISOString().split('T')[0];
-  //   });
-  // };
 
   const generateAttendanceColumns = () => {
     if (!selectedSession) return [];
@@ -417,98 +408,11 @@ export const AttendanceTable = () => {
 
   const attendanceDates = generateAttendanceColumns();
 
-  const handleDeletePrompt = (e: React.MouseEvent, sessionId: string) => {
-    e.stopPropagation();
-    setSessionToDelete(sessionId);
-    setIsDeleteDialogOpen(true);
-  };
 
-  const handleDeleteSession = async () => {
-    if (!sessionToDelete) return;
-    try {
-      await deleteSession(sessionToDelete);
-      toast({
-        title: "Session Deleted",
-        description: "Attendance session has been deleted successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete session. Please try again.",
-        variant: "destructive",
-      });
-    }
-    setIsDeleteDialogOpen(false);
-  };
-
-  const handleAddStudent = async (newStudent: addStudentData | any) => {
-    try {
-      const response = await attendanceService.addCarryoverStudent(
-        selectedSession.id,
-        {
-          name: `${newStudent.firstName} ${newStudent.lastName}`,
-          email: newStudent.email,
-          regNo: newStudent.regNo,
-          level: newStudent.level || "100",
-          addmissionYear: newStudent.addmissionYear,
-          fingerPrint: newStudent.regNo,
-        }
-      );
-
-      // Add to store with the id from the response
-      if (response && response.data && response.data.data) {
-        const addedStudent = response.data.data[0];
-        setSelectedSession({
-          ...selectedSession,
-          students: [
-            ...selectedSession.students,
-            {
-              name: `${newStudent.firstName} ${newStudent.lastName}`,
-              id:
-                newStudent.regNo + newStudent.email + newStudent.addmissionYear,
-              registrationNumber: newStudent.regNo,
-              attendance: [],
-            },
-          ],
-        });
-      }
-
-      toast({
-        title:
-          "Student Added Successfully to the attendance. Kindly refresh to see the update!",
-        description: "The student has been added to the attendance.",
-      });
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to add student"
-      );
-      toast({
-        title: "Error",
-        description: "Failed to add student. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
-    <>
+      <>
       <Card className="lg:col-span-8">
-        <div className="flex justify-between p-2 items-center">
-          <Button
-            className="text-blue-600 hover:bg-transparent bg-transparent  py-3 px-3 rounded-full hover:text-blue-700 gap-2"
-            onClick={() => setIsAddStudentOpen(true)}
-          >
-            <UserPlus size={10} />
-            {/* Add Carryover Student */}
-          </Button>
-          <Button
-            onClick={(e) => handleDeletePrompt(e, selectedSession.id)}
-            className="gap-2 py-3 px-3 rounded-full hover:bg-transparent bg-transparent hover:text-red-700 text-red-500"
-          >
-            <Trash2 size={10} />
-            {/* Delete */}
-          </Button>
-        </div>
         <CardHeader className="flex flex-col">
           <div className="text-center mb-4 flex flex-col justify-center items-center">
             <h2 className="text-xl md:text-[25px] text-[15px] font-bold">
@@ -566,7 +470,7 @@ export const AttendanceTable = () => {
                   <TableHead className="border-r md:text-[12px] text-[7px] text-center">
                     PERCENTAGE
                   </TableHead>
-                  <TableHead className="w-[180px]">Actions</TableHead>
+                 
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -651,30 +555,7 @@ export const AttendanceTable = () => {
                           return `${percentage}%`;
                         })()}
                       </TableCell>
-                      <TableCell>
-                        {selectedSession.isActive && (
-                          <div className="flex space-x-1">
-                            <Button
-                              size="sm"
-                              className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
-                              onClick={() =>
-                                handleMarkAttendance(student.id, "present")
-                              }
-                            >
-                              Present
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
-                              onClick={() =>
-                                handleMarkAttendance(student.id, "absent")
-                              }
-                            >
-                              Absent
-                            </Button>
-                          </div>
-                        )}
-                      </TableCell>
+                 
                     </TableRow>
                   );
                 })}
@@ -692,13 +573,6 @@ export const AttendanceTable = () => {
               <FileDown size={16} />
               Export
             </Button>
-            {/* <Button 
-            className="bg-blue-600  w-full md:w-fit hover:bg-blue-700 gap-2"
-            onClick={() => setIsAddStudentOpen(true)}
-          >
-            <UserPlus size={16} />
-            Add Carryover Student
-          </Button> */}
             {showExportOptions && (
               <div className="absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                 <div className="py-1">
@@ -724,84 +598,13 @@ export const AttendanceTable = () => {
               </div>
             )}
           </div>
-          <div className="flex gap-2 w-full md:w-fit">
-            {/* <Button
-              onClick={(e) => handleDeletePrompt(e, selectedSession.id)}
-              variant={"destructive"}
-              className="gap-2 w-full md:w-fit bg-red-500"
-            >
-              <Trash2 size={16} />
-              Delete
-            </Button> */}
-            <Button
-              onClick={handleToggleSessionStatusPrompt}
-              variant={selectedSession.isActive ? "destructive" : "default"}
-              className="gap-2 w-full md:w-fit"
-            >
-              <Power size={16} />
-              {selectedSession.isActive ? "Deactivate" : "Activate"}
-            </Button>
-          </div>
+       
         </CardFooter>
       </Card>
 
-      <AlertDialog
-        open={isStatusDialogOpen}
-        onOpenChange={setIsStatusDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedSession.isActive
-                ? "Are you sure you want to deactivate this attendance session? Students will no longer be able to mark their attendance."
-                : "Are you sure you want to activate this attendance session? This will allow students to mark their attendance."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleToggleSessionStatus}
-              className={
-                selectedSession.isActive
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
-              }
-            >
-              {selectedSession.isActive ? "Deactivate" : "Activate"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              attendance session from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteSession}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      
 
-      <AddStudentDialog
-        open={isAddStudentOpen}
-        onOpenChange={setIsAddStudentOpen}
-        onStudentAdded={handleAddStudent}
-      />
+     
     </>
   );
 };

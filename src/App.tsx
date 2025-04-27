@@ -25,6 +25,7 @@ import { PrivateRoute } from "./components/auth/PrivateRoute";
 import Activities from "./pages/Activities";
 import { ScrollToTop } from "./components/ScrollTop/ScrollTop";
 import QuickGuide from "./pages/QuickGuide";
+import ViewAttendance from "./pages/ViewAttendance";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/activities" element={<Activities />} />
               <Route path="/performance" element={<Performance />} />
               <Route path="/quick-guide" element={<QuickGuide />} />
+              <Route path="/view-attendance" element={<ViewAttendance />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

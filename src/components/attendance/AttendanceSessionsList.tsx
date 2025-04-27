@@ -6,19 +6,7 @@ import {
 } from "@/stores/useAttendanceStore";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface AttendanceSessionsListProps {
   filteredSessions: AttendanceSession[];
@@ -29,9 +17,8 @@ export const AttendanceSessionsList = ({
 }: AttendanceSessionsListProps) => {
   const { selectedSession, setSelectedSession, deleteSession } =
     useAttendanceStore();
-  const { toast } = useToast();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const sessionsPerPage = 5;
 
   const formatDate = (dateString: string) => {
     try {
@@ -51,29 +38,15 @@ export const AttendanceSessionsList = ({
     }
   };
 
-  const handleDeletePrompt = (e: React.MouseEvent, sessionId: string) => {
-    e.stopPropagation();
-    setSessionToDelete(sessionId);
-    setIsDeleteDialogOpen(true);
-  };
+  // Pagination logic
+  const indexOfLastSession = currentPage * sessionsPerPage;
+  const indexOfFirstSession = indexOfLastSession - sessionsPerPage;
+  const currentSessions = filteredSessions.slice(
+    indexOfFirstSession,
+    indexOfLastSession
+  );
 
-  const handleDeleteSession = async () => {
-    if (!sessionToDelete) return;
-    try {
-      await deleteSession(sessionToDelete);
-      toast({
-        title: "Session Deleted",
-        description: "Attendance session has been deleted successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete session. Please try again.",
-        variant: "destructive",
-      });
-    }
-    setIsDeleteDialogOpen(false);
-  };
+  const totalPages = Math.ceil(filteredSessions.length / sessionsPerPage);
 
   return (
     <>
@@ -106,11 +79,10 @@ export const AttendanceSessionsList = ({
                     <th className="p-3">Present</th>
                     <th className="p-3">Absent</th>
                     <th className="p-3">Status</th>
-                    <th className="p-3 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSessions.map((session) => {
+                  {currentSessions.map((session) => {
                     const today = new Date().toISOString().split("T")[0];
                     const presentCount =
                       session.students?.filter(
@@ -142,14 +114,8 @@ export const AttendanceSessionsList = ({
                           </span>
                         </td>
                         <td className="p-3">{session.semester}</td>
-                        <td className=" p-3 text-green-600 ">
-                          {/*<CheckCircle size={12} className="mr-" />*/}{" "}
-                          {presentCount}
-                        </td>
-                        <td className="p-3 text-red-600 ">
-                          {/* <XCircle size={6} className="mr-" />*/}{" "}
-                          {absentCount}
-                        </td>
+                        <td className=" p-3 text-green-600 ">{presentCount}</td>
+                        <td className="p-3 text-red-600 ">{absentCount}</td>
                         <td className="p-3">
                           {session.isActive ? (
                             <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
@@ -164,16 +130,6 @@ export const AttendanceSessionsList = ({
                             </Badge>
                           )}
                         </td>
-                        <td className="p-3 text-center">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => handleDeletePrompt(e, session.id)}
-                          >
-                            <Trash2 size={14} className="text-red-500" />
-                          </Button>
-                        </td>
                       </tr>
                     );
                   })}
@@ -181,32 +137,26 @@ export const AttendanceSessionsList = ({
               </table>
             </div>
           )}
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center mt-4">
+            <Button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
         </CardContent>
       </Card>
-
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              attendance session from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteSession}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };

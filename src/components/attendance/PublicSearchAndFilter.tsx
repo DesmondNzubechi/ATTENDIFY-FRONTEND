@@ -1,30 +1,8 @@
-
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+
 import { useAttendanceStore } from "@/stores/useAttendanceStore";
-import { PlusCircle } from "lucide-react";
 
-interface SearchAndFiltersProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  onOpenFilter: () => void;
-  onOpenActivateAttendance: () => void;
-  level: string | number;
-  academicSession: string;
-  semester: string;
-  setSemester: (sem: string) => void;
-  setAcademicSession: (acad: string) => void;
-  setLevel: (level: string | number) => void;
-  theCourse: string;
-  setTheCourse: (course: string) => void;
-}
-
-export const SearchAndFilters = ({
-  searchQuery,
-  setSearchQuery,
-  onOpenFilter,
-  onOpenActivateAttendance,
-}: SearchAndFiltersProps) => {
+export const PublicSearchAndFilters = () => {
   const { sessions: attendanceSession, setSelectedSession } =
     useAttendanceStore();
   const [level, setLevel] = useState("");
@@ -126,16 +104,6 @@ export const SearchAndFilters = ({
               </option>
             ))}
           </select>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            className="bg-blue-600 w-full md:w-fit hover:bg-blue-700 gap-2"
-            onClick={onOpenActivateAttendance}
-          >
-            <PlusCircle size={16} />
-            Add Attendance
-          </Button>
         </div>
       </div>
     </div>
