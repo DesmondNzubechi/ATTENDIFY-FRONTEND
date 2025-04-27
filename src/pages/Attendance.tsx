@@ -232,10 +232,9 @@ export default function Attendance() {
       />
    
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-        {/* <AttendanceSessionsList 
+        <AttendanceSessionsList 
           filteredSessions={filteredSessions} 
-          onDelete={handleDeletePrompt}
-        /> */}
+        />
         <AttendanceTable />
       </div>
   
