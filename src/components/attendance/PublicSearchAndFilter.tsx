@@ -80,6 +80,7 @@ export const PublicSearchAndFilters = () => {
             <option value="300">300L</option>
             <option value="400">400L</option>
             <option value="500">500L</option>
+            <option value="graduated">Graduate</option>
           </select>
 
           <select

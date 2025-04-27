@@ -560,7 +560,9 @@ export const AttendanceTable = () => {
                       key={date}
                       className="border-r md:text-[12px] text-[7px] text-center"
                     >
-                      {/* {new Date(date).toLocaleDateString()} */}SIGN
+                      <b>SIGN</b>
+                      <br />
+                      {new Date(date).toLocaleDateString()}
                     </TableHead>
                   ))}
                   <TableHead className="border-r md:text-[12px] text-[7px] text-center">
@@ -633,8 +635,15 @@ export const AttendanceTable = () => {
 
                       <TableCell className="border-r text-center">
                         {(() => {
-                          const totalMarked = attendanceDates.length;
-                          const totalPresent = attendanceDates.reduce(
+                          // Only count dates that have a present or absent status
+                          const markedDates = attendanceDates.filter((date) => {
+                            const status = student.attendance[date]?.status;
+                            return status === "present" || status === "absent";
+                          });
+
+                          const totalMarked = markedDates.length;
+
+                          const totalPresent = markedDates.reduce(
                             (count, date) => {
                               return student.attendance[date]?.status ===
                                 "present"
@@ -648,32 +657,86 @@ export const AttendanceTable = () => {
                             totalMarked > 0
                               ? ((totalPresent / totalMarked) * 100).toFixed(1)
                               : "0.0";
+
                           return `${percentage}%`;
                         })()}
                       </TableCell>
+
                       <TableCell>
-                        {selectedSession.isActive && (
-                          <div className="flex space-x-1">
-                            <Button
-                              size="sm"
-                              className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
-                              onClick={() =>
-                                handleMarkAttendance(student.id, "present")
-                              }
-                            >
-                              Present
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
-                              onClick={() =>
-                                handleMarkAttendance(student.id, "absent")
-                              }
-                            >
-                              Absent
-                            </Button>
-                          </div>
-                        )}
+                        <TableCell>
+                          {selectedSession.isActive &&
+                            (() => {
+                              // Find the last marked attendance (looking backwards)
+                              const lastAttendance = [...attendanceDates] // copy array to avoid mutation
+                                .reverse()
+                                .map(
+                                  (date) =>
+                                    student.attendance[date]?.status || null
+                                )
+                                .find((status) => status !== null);
+
+                              return (
+                                <div className="flex space-x-1">
+                                  {lastAttendance === "present" && (
+                                    <Button
+                                      size="sm"
+                                      className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
+                                      onClick={() =>
+                                        handleMarkAttendance(
+                                          student.id,
+                                          "absent"
+                                        )
+                                      }
+                                    >
+                                      Mark Absent
+                                    </Button>
+                                  )}
+                                  {lastAttendance === "absent" && (
+                                    <Button
+                                      size="sm"
+                                      className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
+                                      onClick={() =>
+                                        handleMarkAttendance(
+                                          student.id,
+                                          "present"
+                                        )
+                                      }
+                                    >
+                                      Mark Present
+                                    </Button>
+                                  )}
+                                  {lastAttendance === undefined && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
+                                        onClick={() =>
+                                          handleMarkAttendance(
+                                            student.id,
+                                            "present"
+                                          )
+                                        }
+                                      >
+                                        Present
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
+                                        onClick={() =>
+                                          handleMarkAttendance(
+                                            student.id,
+                                            "absent"
+                                          )
+                                        }
+                                      >
+                                        Absent
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                        </TableCell>
                       </TableCell>
                     </TableRow>
                   );

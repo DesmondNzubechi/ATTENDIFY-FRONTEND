@@ -365,7 +365,6 @@ export const PublicAttendanceTable = () => {
     );
   }
 
-
   const generateAttendanceColumns = () => {
     if (!selectedSession) return [];
 
@@ -408,10 +407,8 @@ export const PublicAttendanceTable = () => {
 
   const attendanceDates = generateAttendanceColumns();
 
-
-
   return (
-      <>
+    <>
       <Card className="lg:col-span-8">
         <CardHeader className="flex flex-col">
           <div className="text-center mb-4 flex flex-col justify-center items-center">
@@ -464,13 +461,14 @@ export const PublicAttendanceTable = () => {
                       key={date}
                       className="border-r md:text-[12px] text-[7px] text-center"
                     >
-                      {/* {new Date(date).toLocaleDateString()} */}SIGN
+                      <b>SIGN</b>
+                      <br />
+                      {new Date(date).toLocaleDateString()}
                     </TableHead>
                   ))}
                   <TableHead className="border-r md:text-[12px] text-[7px] text-center">
                     PERCENTAGE
                   </TableHead>
-                 
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -537,8 +535,15 @@ export const PublicAttendanceTable = () => {
 
                       <TableCell className="border-r text-center">
                         {(() => {
-                          const totalMarked = attendanceDates.length;
-                          const totalPresent = attendanceDates.reduce(
+                          // Only count dates that have a present or absent status
+                          const markedDates = attendanceDates.filter((date) => {
+                            const status = student.attendance[date]?.status;
+                            return status === "present" || status === "absent";
+                          });
+
+                          const totalMarked = markedDates.length;
+
+                          const totalPresent = markedDates.reduce(
                             (count, date) => {
                               return student.attendance[date]?.status ===
                                 "present"
@@ -552,10 +557,10 @@ export const PublicAttendanceTable = () => {
                             totalMarked > 0
                               ? ((totalPresent / totalMarked) * 100).toFixed(1)
                               : "0.0";
+
                           return `${percentage}%`;
                         })()}
                       </TableCell>
-                 
                     </TableRow>
                   );
                 })}
@@ -598,13 +603,8 @@ export const PublicAttendanceTable = () => {
               </div>
             )}
           </div>
-       
         </CardFooter>
       </Card>
-
-      
-
-     
     </>
   );
 };
