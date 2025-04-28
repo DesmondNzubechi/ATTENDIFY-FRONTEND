@@ -100,7 +100,7 @@ export const AttendanceSessionsList = ({
                           selectedSession?.id === session.id ? "bg-blue-50" : ""
                         }`}
                         onClick={() => setSelectedSession(session)}
-                      >
+                      > 
                         <td className="p-3 font-medium">
                           {session.course} ({session.courseCode})
                         </td>

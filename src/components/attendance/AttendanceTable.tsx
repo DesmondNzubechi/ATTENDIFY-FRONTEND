@@ -490,6 +490,15 @@ export const AttendanceTable = () => {
     }
   };
 
+  const getLastAttendanceStatus = (student) => {
+    const dates = Object.keys(student.attendance || {}).sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    );
+    if (dates.length === 0) return null;
+    const lastDate = dates[0];
+    return student.attendance[lastDate]?.status || null;
+  };
+
   return (
     <>
       <Card className="lg:col-span-8">
@@ -663,80 +672,49 @@ export const AttendanceTable = () => {
                       </TableCell>
 
                       <TableCell>
-                        <TableCell>
-                          {selectedSession.isActive &&
-                            (() => {
-                              // Find the last marked attendance (looking backwards)
-                              const lastAttendance = [...attendanceDates] // copy array to avoid mutation
-                                .reverse()
-                                .map(
-                                  (date) =>
-                                    student.attendance[date]?.status || null
-                                )
-                                .find((status) => status !== null);
+                        {selectedSession.isActive && (
+                          <div className="flex space-x-1">
+                            <>
+                              <Button
+                                size="sm"
+                                className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
+                                onClick={() => {
+                                  const lastStatus =
+                                    getLastAttendanceStatus(student);
+                                  if (lastStatus === "present") {
+                                    toast({
+                                      title: "Attendance Marked",
+                                      description: `Already marked as present`,
+                                    });
+                                    return;
+                                  }
+                                  handleMarkAttendance(student.id, "present");
+                                }}
+                              >
+                                Present
+                              </Button>
 
-                              return (
-                                <div className="flex space-x-1">
-                                  {lastAttendance === "present" && (
-                                    <Button
-                                      size="sm"
-                                      className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
-                                      onClick={() =>
-                                        handleMarkAttendance(
-                                          student.id,
-                                          "absent"
-                                        )
-                                      }
-                                    >
-                                      Mark Absent
-                                    </Button>
-                                  )}
-                                  {lastAttendance === "absent" && (
-                                    <Button
-                                      size="sm"
-                                      className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
-                                      onClick={() =>
-                                        handleMarkAttendance(
-                                          student.id,
-                                          "present"
-                                        )
-                                      }
-                                    >
-                                      Mark Present
-                                    </Button>
-                                  )}
-                                  {lastAttendance === undefined && (
-                                    <>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 px-2 bg-green-500 hover:bg-green-600 text-white"
-                                        onClick={() =>
-                                          handleMarkAttendance(
-                                            student.id,
-                                            "present"
-                                          )
-                                        }
-                                      >
-                                        Present
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
-                                        onClick={() =>
-                                          handleMarkAttendance(
-                                            student.id,
-                                            "absent"
-                                          )
-                                        }
-                                      >
-                                        Absent
-                                      </Button>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                        </TableCell>
+                              <Button
+                                size="sm"
+                                className="h-8 px-2 bg-[#ea384c] hover:bg-[#d1293d] text-white"
+                                onClick={() => {
+                                  const lastStatus =
+                                    getLastAttendanceStatus(student);
+                                  if (lastStatus === "absent") {
+                                    toast({
+                                      title: "Attendance Marked",
+                                      description: `Already Marked absent`,
+                                    });
+                                    return;
+                                  }
+                                  handleMarkAttendance(student.id, "absent");
+                                }}
+                              >
+                                Absent
+                              </Button>
+                            </>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

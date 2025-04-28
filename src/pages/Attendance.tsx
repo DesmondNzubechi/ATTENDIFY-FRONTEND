@@ -232,12 +232,12 @@ export default function Attendance() {
       />
    
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-        <AttendanceSessionsList 
+        {/* <AttendanceSessionsList 
           filteredSessions={filteredSessions} 
-        />
+        /> */}
         <AttendanceTable />
       </div>
-  
+   
       <ActivateAttendanceDialog 
         open={isActivateAttendanceOpen}
         onOpenChange={setIsActivateAttendanceOpen}
@@ -250,7 +250,7 @@ export default function Attendance() {
           id: session.id,
           name: session.sessionName 
         }))}
-      /> 
+      />  
 
       <FilterModal 
         open={isFilterOpen}
