@@ -171,7 +171,7 @@ export function Sidebar() {
             to="/profile"
           />
           <SidebarItem icon={Settings} label="Settings" /> 
-          <SidebarItem icon={HelpCircle} label="Help Center" />
+          {/* <SidebarItem icon={HelpCircle} label="Help Center" /> */}
         </div>
       </aside>
     </>
