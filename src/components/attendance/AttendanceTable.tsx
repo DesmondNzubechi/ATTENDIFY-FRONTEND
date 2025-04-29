@@ -180,20 +180,19 @@ export const AttendanceTable = () => {
       { align: "center" }
     );
 
-    // Generate columns for attendance dates
     const attendanceDates = generateAttendanceColumns();
 
-    // Prepare table headers
+    // Headers with percentage
     const tableHeaders = [
       [
         "#",
         "Student Name",
         "Registration Number",
         ...attendanceDates.map((date) => new Date(date).toLocaleDateString()),
+        "Attendance (%)",
       ],
     ];
 
-    // Prepare table data
     const tableData = selectedSession.students.map((student, index) => {
       const row = [
         (index + 1).toString(),
@@ -201,22 +200,32 @@ export const AttendanceTable = () => {
         student.registrationNumber,
       ];
 
-      // Add attendance status for each date
+      let markedCount = 0;
+      let presentCount = 0;
+
       attendanceDates.forEach((date) => {
         const attendanceForDate = student.attendance[date];
         if (attendanceForDate) {
-          row.push(
-            attendanceForDate.status === "present" ? "Present" : "Absent"
-          );
+          markedCount++;
+          if (attendanceForDate.status === "present") {
+            presentCount++;
+            row.push("Present");
+          } else {
+            row.push("Absent");
+          }
         } else {
           row.push("");
         }
       });
 
+      const percentage = markedCount
+        ? ((presentCount / markedCount) * 100).toFixed(1)
+        : "0.0";
+
+      row.push(`${percentage}%`);
       return row;
     });
 
-    // Create table
     autoTable(doc, {
       head: tableHeaders,
       body: tableData,
@@ -225,8 +234,11 @@ export const AttendanceTable = () => {
       styles: { fontSize: 8, cellPadding: 1 },
       headStyles: { fillColor: [41, 128, 185], textColor: 255 },
       didDrawCell: (data) => {
-        // Color cells based on attendance status
-        if (data.section === "body" && data.column.index >= 3) {
+        if (
+          data.section === "body" &&
+          data.column.index >= 3 &&
+          data.column.index < data.row.cells.length - 1
+        ) {
           const cellValue = data.cell.text[0];
           if (cellValue === "Present") {
             data.cell.styles.fillColor = [232, 255, 232];
@@ -237,7 +249,6 @@ export const AttendanceTable = () => {
       },
     });
 
-    // Save the PDF
     doc.save(
       `${selectedSession.courseCode}_Attendance_${
         new Date().toISOString().split("T")[0]
@@ -254,11 +265,12 @@ export const AttendanceTable = () => {
   const exportToWord = () => {
     if (!selectedSession) return;
 
-    // Create a blob of HTML that will be converted to Word format
     const attendanceDates = generateAttendanceColumns();
 
     let tableHTML = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+            xmlns:w='urn:schemas-microsoft-com:office:word' 
+            xmlns='http://www.w3.org/TR/REC-html40'>
       <head>
         <meta charset='utf-8'>
         <title>Attendance Sheet</title>
@@ -284,28 +296,33 @@ export const AttendanceTable = () => {
               <th>REGISTRATION NUMBER</th>
               ${attendanceDates
                 .map(
-                  (date) => `<th>${new Date(date).toLocaleDateString()}</th>`
+                  (date) =>
+                    `<th>SIGN <br/> ${new Date(date).toLocaleDateString()}</th>`
                 )
                 .join("")}
-              <br>
-              SIGN
+              <th>Attendance (%)</th>
             </tr>
-            <tr>PERCENTAGE<tr>
           </thead>
           <tbody>
     `;
 
     selectedSession.students.forEach((student, index) => {
-      tableHTML += `<tr>
-        <td>${index + 1}</td>
-        <td>${student.name}</td>
-        <td>${student.registrationNumber}</td>
+      tableHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${student.name}</td>
+          <td>${student.registrationNumber}</td>
       `;
+
+      let markedCount = 0;
+      let presentCount = 0;
 
       attendanceDates.forEach((date) => {
         const attendanceForDate = student.attendance[date];
         if (attendanceForDate) {
+          markedCount++;
           if (attendanceForDate.status === "present") {
+            presentCount++;
             tableHTML += `<td class="present">Present</td>`;
           } else {
             tableHTML += `<td class="absent">Absent</td>`;
@@ -315,6 +332,11 @@ export const AttendanceTable = () => {
         }
       });
 
+      const percentage = markedCount
+        ? ((presentCount / markedCount) * 100).toFixed(1)
+        : "0.0";
+
+      tableHTML += `<td>${percentage}%</td>`;
       tableHTML += `</tr>`;
     });
 
@@ -325,7 +347,6 @@ export const AttendanceTable = () => {
       </html>
     `;
 
-    // Create a Blob and download link
     const blob = new Blob([tableHTML], { type: "application/msword" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -496,6 +517,13 @@ export const AttendanceTable = () => {
     );
     if (dates.length === 0) return null;
     const lastDate = dates[0];
+
+    const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+    if (lastDate !== today) {
+      return null; // If last attendance is not today, treat as no attendance
+    }
+
     return student.attendance[lastDate]?.status || null;
   };
 
