@@ -112,12 +112,12 @@ export default function Login() {
                 </>
               )}
             </Button>
-            {/* <p className="text-center text-sm">
+            <p className="text-center text-sm">
                Don't have an account?{" "}
               <Link to="/register" className="text-blue-600 hover:text-blue-800">
                 Sign up
               </Link> 
-            </p> */}
+            </p>
           </CardFooter>
         </form>
       </Card>
