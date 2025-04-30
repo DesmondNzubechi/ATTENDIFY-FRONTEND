@@ -1,6 +1,6 @@
 # ATTENDIFY - FRONTEND
 
-**Attendify** is a web-based attendance management system designed to modernize how attendance is tracked and recorded in academic environments. This frontend application is built using **React with Vite**, along with supporting libraries and tools such as **Zustand**, **Tailwind CSS**, and the native **Fetch API**, to deliver a responsive, fast, and user-friendly experience for administrators, lecturers, and students.
+**Attendify** is a web-based attendance management system designed to modernize how students' attendance is tracked and recorded in academic environments. I developed this project to solve the challenges we face with paper attendance in my school. The idea is to manage attendance digitally, where students' attendance for each class is recorded online, stored safely, and can be downloaded anytime. With this system, the school management can also easily monitor students' attendance performance without dealing with lost papers. This is the frontend application built using **React/Typescript with Vite**, along with supporting libraries and tools such as **Zustand**, **Tailwind CSS**, and the native **Fetch API**, to deliver a responsive, fast, and user-friendly experience for administrators, lecturers, and students.
 
 ---
 
