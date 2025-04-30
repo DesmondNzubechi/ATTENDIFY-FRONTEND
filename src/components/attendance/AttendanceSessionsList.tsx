@@ -19,7 +19,7 @@ export const AttendanceSessionsList = ({
     useAttendanceStore();
   const [currentPage, setCurrentPage] = useState(1);
   const sessionsPerPage = 5;
-
+ 
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -80,7 +80,7 @@ export const AttendanceSessionsList = ({
                     <th className="p-3">Absent</th>
                     <th className="p-3">Status</th>
                   </tr>
-                </thead>
+                </thead> 
                 <tbody>
                   {currentSessions.map((session) => {
                     const today = new Date().toISOString().split("T")[0];
@@ -100,7 +100,7 @@ export const AttendanceSessionsList = ({
                           selectedSession?.id === session.id ? "bg-blue-50" : ""
                         }`}
                         onClick={() => setSelectedSession(session)}
-                      > 
+                      >  
                         <td className="p-3 font-medium">
                           {session.course} ({session.courseCode})
                         </td>

@@ -59,6 +59,8 @@ export default function Attendance() {
     { id: 'level-200', label: 'Level 200', checked: false, group: 'Level' },
     { id: 'level-300', label: 'Level 300', checked: false, group: 'Level' },
     { id: 'level-400', label: 'Level 400', checked: false, group: 'Level' },
+    { id: 'level-500', label: 'Level 500', checked: false, group: 'Level' },
+    //{ id: 'level-graduate', label: 'Level Graduate', checked: false, group: 'Level' },
     { id: 'semester-first', label: 'First Semester', checked: false, group: 'Semester' },
     { id: 'semester-second', label: 'Second Semester', checked: false, group: 'Semester' },
     { id: 'status-active', label: 'Active Sessions', checked: false, group: 'Status' },
@@ -103,10 +105,10 @@ export default function Attendance() {
   };
 
   // Function to handle session deletion
-  const handleDeletePrompt = (sessionId: string) => {
-    setSessionToDelete(sessionId);
-    setIsDeleteDialogOpen(true);
-  };
+  // const handleDeletePrompt = (sessionId: string) => {
+  //   setSessionToDelete(sessionId);
+  //   setIsDeleteDialogOpen(true);
+  // };
 
   const handleConfirmDelete = async () => {
     if (!sessionToDelete) return;
@@ -131,24 +133,41 @@ export default function Attendance() {
   };
 
   // Get available levels
-  const getLevels = () => {
-    const levels = new Set<string>();
-    sessions.forEach(session => {
-      if (session.level) {
-        levels.add(session.level);
-      }
-    });
-    return Array.from(levels);
-  };
+  // const getLevels = () => {
+  //   const levels = new Set<string>();
+  //   sessions.forEach(session => {
+  //     if (session.level) {
+  //       levels.add(session.level);
+  //     }
+  //   });
+  //   return Array.from(levels);
+  // };
 
   // Get formatted courses for dropdown
-  const getFormattedCourses = () => {
-    return courses.map(course => ({
-      id: course.id,
-      name: course.courseName,
-      code: course.courseCode
+  // const getFormattedCourses = () => {
+  //   return courses.map(course => ({
+  //     id: course.id,
+  //     name: course.courseName,
+  //     code: course.courseCode
+  //   }));
+  // };
+
+
+  useEffect(() => {
+    const courseFilterOptions = courses.map(course => ({
+      id: `course-${course.id}`,
+      label: `${course.courseName} (${course.courseCode})`,
+      checked: false,
+      group: 'Course'
     }));
-  };
+  
+    setFilterOptions(prevOptions => {
+      // Avoid duplicating course filters
+      const nonCourseFilters = prevOptions.filter(option => option.group !== 'Course');
+      return [...nonCourseFilters, ...courseFilterOptions];
+    });
+  }, [courses]);
+  
 
   // Filter attendance sessions based on search query and filter options
   const filteredSessions = React.useMemo(() => {
@@ -192,9 +211,14 @@ export default function Attendance() {
           return (filter.id === 'status-active' && session.isActive) ||
                  (filter.id === 'status-inactive' && !session.isActive);
         }
+        if (filter.group === 'Course') {
+          const formattedLabel = `${session.course} (${session.courseCode})`;
+          return filter.label === formattedLabel;
+        }
+        
         return true;
       });
-      
+       
       return matchesSearch && matchesFilters && matchesLevel && matchesCourse && matchesSession && matchesSemester;
     });
   }, [sessions, searchQuery, filterOptions, selectedLevel, selectedCourse, selectedAcademicSession, selectedSemester, courses, academicSessions]);
@@ -232,12 +256,12 @@ export default function Attendance() {
       />
    
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-        {/* <AttendanceSessionsList 
+        <AttendanceSessionsList 
           filteredSessions={filteredSessions} 
-        /> */}
+        />
         <AttendanceTable />
       </div>
-   
+    
       <ActivateAttendanceDialog 
         open={isActivateAttendanceOpen}
         onOpenChange={setIsActivateAttendanceOpen}
@@ -257,7 +281,7 @@ export default function Attendance() {
         onOpenChange={setIsFilterOpen}
         options={filterOptions}
         onApplyFilters={handleApplyFilters}
-        groups={['Level', 'Semester', 'Status']}
+        groups={['Level', 'Semester', 'Status', "Course"]}
         academicSessions={academicSessions.map(session => ({
           id: session.id,
           name: session.sessionName

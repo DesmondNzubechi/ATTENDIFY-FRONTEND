@@ -1,11 +1,21 @@
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export type FilterOption = {
   id: string;
@@ -21,7 +31,7 @@ interface FilterModalProps {
   options: FilterOption[];
   onApplyFilters: (filteredOptions: FilterOption[]) => void;
   groups?: string[];
-  academicSessions?: { id: string, name: string }[];
+  academicSessions?: { id: string; name: string }[];
   onSelectAcademicSession?: (id: string) => void;
   selectedAcademicSession?: string;
 }
@@ -29,18 +39,22 @@ interface FilterModalProps {
 export function FilterModal({
   open,
   onOpenChange,
-  title = 'Filter content',
+  title = "Filter content",
   options,
   onApplyFilters,
   groups = [],
   academicSessions = [],
   onSelectAcademicSession,
-  selectedAcademicSession = '',
+  selectedAcademicSession = "",
 }: FilterModalProps) {
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>(options);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeGroup, setActiveGroup] = useState<string | null>(groups.length > 0 ? groups[0] : null);
-  const [localSelectedSession, setLocalSelectedSession] = useState(selectedAcademicSession);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeGroup, setActiveGroup] = useState<string | null>(
+    groups.length > 0 ? groups[0] : null
+  );
+  const [localSelectedSession, setLocalSelectedSession] = useState(
+    selectedAcademicSession
+  );
 
   const handleCheckboxChange = (id: string) => {
     setFilterOptions(
@@ -62,10 +76,19 @@ export function FilterModal({
     setLocalSelectedSession(value);
   };
 
-  const filteredOptions = filterOptions.filter((option) =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase()) && 
-    (!activeGroup || !option.group || option.group === activeGroup)
+  const filteredOptions = filterOptions.filter(
+    (option) =>
+      option.label.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (!activeGroup || !option.group || option.group === activeGroup)
   );
+
+  const handleResetFilters = () => {
+    setFilterOptions(options.map((opt) => ({ ...opt, checked: false })));
+    setSearchQuery("");
+    setActiveGroup(groups.length > 0 ? groups[0] : null);
+    setLocalSelectedSession("");
+    onOpenChange(false)
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,7 +110,9 @@ export function FilterModal({
                 <Button
                   key={group}
                   variant="outline"
-                  className={activeGroup === group ? 'bg-blue-500 text-white' : ''}
+                  className={
+                    activeGroup === group ? "bg-blue-500 text-white" : ""
+                  }
                   onClick={() => setActiveGroup(group)}
                 >
                   {group}
@@ -99,15 +124,15 @@ export function FilterModal({
           {academicSessions.length > 0 && onSelectAcademicSession && (
             <div className="space-y-2">
               <Label htmlFor="academic-session">Academic Session</Label>
-              <Select 
-                value={localSelectedSession} 
+              <Select
+                value={localSelectedSession}
                 onValueChange={handleAcademicSessionChange}
               >
                 <SelectTrigger id="academic-session">
                   <SelectValue placeholder="Select Academic Session" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Sessions</SelectItem>
+                  <SelectItem value="all">All Sessions</SelectItem>
                   {academicSessions.map((session) => (
                     <SelectItem key={session.id} value={session.id}>
                       {session.name}
@@ -137,7 +162,12 @@ export function FilterModal({
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleApplyFilters}>Apply</Button>
+            <div className="flex gap-4 justify-between">
+              <Button variant="outline" onClick={handleResetFilters}>
+                Reset
+              </Button>
+              <Button onClick={handleApplyFilters}>Apply</Button>
+            </div>
           </div>
         </div>
       </DialogContent>
