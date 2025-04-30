@@ -70,6 +70,7 @@ export interface CourseAttendance {
 export interface AcademicSessionAttendance {
   active: boolean;
   _id: string;
+  id?: string;
   name: string;
   start: string;
   end: string;

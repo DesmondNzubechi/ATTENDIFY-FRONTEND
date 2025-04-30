@@ -31,7 +31,7 @@ interface FilterModalProps {
   options: FilterOption[];
   onApplyFilters: (filteredOptions: FilterOption[]) => void;
   groups?: string[];
-  academicSessions?: { id: string; name: string }[];
+  academicSessions?: { sessionId: string; sessionName: string }[];
   onSelectAcademicSession?: (id: string) => void;
   selectedAcademicSession?: string;
 }
@@ -56,6 +56,7 @@ export function FilterModal({
     selectedAcademicSession
   );
 
+  console.log("Academic session is here", academicSessions);
   const handleCheckboxChange = (id: string) => {
     setFilterOptions(
       filterOptions.map((option) =>
@@ -87,7 +88,7 @@ export function FilterModal({
     setSearchQuery("");
     setActiveGroup(groups.length > 0 ? groups[0] : null);
     setLocalSelectedSession("");
-    onOpenChange(false)
+    onOpenChange(false);
   };
 
   return (
@@ -134,8 +135,11 @@ export function FilterModal({
                 <SelectContent>
                   <SelectItem value="all">All Sessions</SelectItem>
                   {academicSessions.map((session) => (
-                    <SelectItem key={session.id} value={session.id}>
-                      {session.name}
+                    <SelectItem
+                      key={session.sessionId}
+                      value={session.sessionId}
+                    >
+                      {session.sessionName}
                     </SelectItem>
                   ))}
                 </SelectContent>

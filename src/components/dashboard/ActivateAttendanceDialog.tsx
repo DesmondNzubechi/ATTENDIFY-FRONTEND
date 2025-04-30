@@ -1,11 +1,22 @@
-
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
-import acedemicSessions from '@/pages/acedemicSessions';
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useStudentsStore } from "@/stores/useStudentsStore";
 
 interface ActivateAttendanceDialogProps {
   open: boolean;
@@ -14,103 +25,112 @@ interface ActivateAttendanceDialogProps {
   courses: { id: string; name: string }[];
   sessions: { id: string; name: string }[];
 }
- 
-export function ActivateAttendanceDialog({ 
-  open, 
-  onOpenChange, 
+
+export function ActivateAttendanceDialog({
+  open,
+  onOpenChange,
   onAttendanceActivated,
   courses,
-  sessions
+  sessions,
 }: ActivateAttendanceDialogProps) {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    course: '',
-    acedemicSession: '',
-    level: '',
-    semester: 'First Semester'
+    course: "",
+    acedemicSession: "",
+    level: "",
+    semester: "First Semester",
   });
-    
-  console.log("the form data", formData)
+  const { students } = useStudentsStore();
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (name: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user makes a selection
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.course) {
-      newErrors.course = 'Course is required';
+      newErrors.course = "Course is required";
     }
-    
+
     if (!formData.acedemicSession) {
-      newErrors.acedemicSession = 'Academic Session is required';
+      newErrors.acedemicSession = "Academic Session is required";
     }
-    
+
     if (!formData.level) {
-      newErrors.level = 'Level is required';
+      newErrors.level = "Level is required";
     }
-     
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    const findStudentLevel = students.filter((st) => {
+      return st.level === formData.level;
+    });
+
+    if (findStudentLevel.length === 0) {
+      toast({
+        title: "No students offering this course",
+        description: "There is no student offering this course at the moment.",
+      });
+      return;
+    }
+
     if (validateForm()) {
       onAttendanceActivated(formData);
       onOpenChange(false);
       setFormData({
-        course: '',
-        acedemicSession: '',
-        level: '',
-        semester: 'First Semester'
+        course: "",
+        acedemicSession: "",
+        level: "",
+        semester: "First Semester",
       });
     } else {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
-
-  console.log("The courses id", courses)
-  console.log("The session id", sessions)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Sdd New Attendance</DialogTitle>
+          <DialogTitle>Add New Attendance</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-2">
             <label htmlFor="course" className="text-sm font-medium">
               Course
             </label>
-            <Select 
-              onValueChange={(value) => handleChange('course', value)}
+            <Select
+              onValueChange={(value) => handleChange("course", value)}
               value={formData.course}
             >
               <SelectTrigger className={errors.course ? "border-red-500" : ""}>
                 <SelectValue placeholder="Select a course" />
               </SelectTrigger>
               <SelectContent>
-                {courses.map(course => (
+                {courses.map((course) => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.name}
                   </SelectItem>
@@ -121,20 +141,22 @@ export function ActivateAttendanceDialog({
               <p className="text-xs text-red-500">{errors.course}</p>
             )}
           </div>
-          
+
           <div className="grid gap-2">
             <label htmlFor="acedemicSession" className="text-sm font-medium">
               Academic Session
             </label>
-            <Select 
-              onValueChange={(value) => handleChange('acedemicSession', value)}
+            <Select
+              onValueChange={(value) => handleChange("acedemicSession", value)}
               value={formData.acedemicSession}
             >
-              <SelectTrigger className={errors.acedemicSession ? "border-red-500" : ""}>
+              <SelectTrigger
+                className={errors.acedemicSession ? "border-red-500" : ""}
+              >
                 <SelectValue placeholder="Select a session" />
               </SelectTrigger>
               <SelectContent>
-                {sessions.map(session => (
+                {sessions.map((session) => (
                   <SelectItem key={session.id} value={session.id}>
                     {session.name}
                   </SelectItem>
@@ -145,13 +167,13 @@ export function ActivateAttendanceDialog({
               <p className="text-xs text-red-500">{errors.acedemicSession}</p>
             )}
           </div>
-          
+
           <div className="grid gap-2">
             <label htmlFor="level" className="text-sm font-medium">
               Level
             </label>
-            <Select 
-              onValueChange={(value) => handleChange('level', value)}
+            <Select
+              onValueChange={(value) => handleChange("level", value)}
               value={formData.level}
             >
               <SelectTrigger className={errors.level ? "border-red-500" : ""}>
@@ -169,13 +191,13 @@ export function ActivateAttendanceDialog({
               <p className="text-xs text-red-500">{errors.level}</p>
             )}
           </div>
-          
+
           <div className="grid gap-2">
             <label htmlFor="semester" className="text-sm font-medium">
               Semester
             </label>
-            <Select 
-              onValueChange={(value) => handleChange('semester', value)}
+            <Select
+              onValueChange={(value) => handleChange("semester", value)}
               value={formData.semester}
             >
               <SelectTrigger>
@@ -187,9 +209,13 @@ export function ActivateAttendanceDialog({
               </SelectContent>
             </Select>
           </div>
-          
+
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">Add Attendance</Button>

@@ -1,32 +1,46 @@
-
-import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { authService } from '@/services/api/authService';
-import { useUserStore } from '@/stores/useUserStore';
-import { LogOut, User, Key, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { authService } from "@/services/api/authService";
+import { useUserStore } from "@/stores/useUserStore";
+import { LogOut, User, Key, Loader2 } from "lucide-react";
 // import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '@radix-ui/react-alert-dialog';
 // import { AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 export default function UserProfile() {
   const { currentUser, setUser, logout } = useUserStore();
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isLogOutOpen, setIsLogOutOpen] = useState(false)
+  const [isLogOutOpen, setIsLogOutOpen] = useState(false);
   const [profileData, setProfileData] = useState({
-    fullName: currentUser?.fullName || '',
+    fullName: currentUser?.fullName || "",
     //lastName: currentUser?.lastName || '',
-    email: currentUser?.email || '',
-  }); 
+    email: currentUser?.email || "",
+  });
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
   });
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +96,11 @@ export default function UserProfile() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmNewPassword) {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmNewPassword
+    ) {
       toast({
         title: "Error",
         description: "All fields are required",
@@ -105,13 +123,13 @@ export default function UserProfile() {
       await authService.changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-        confirmNewPassword: passwordData.confirmNewPassword
+        confirmNewPassword: passwordData.confirmNewPassword,
       });
 
       setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: '',
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
       });
 
       toast({
@@ -127,7 +145,7 @@ export default function UserProfile() {
     } finally {
       setIsChangingPassword(false);
     }
-  }; 
+  };
 
   const handleLogout = () => {
     logout();
@@ -135,7 +153,7 @@ export default function UserProfile() {
       title: "Success",
       description: "Logged out successfully",
     });
-  }; 
+  };
 
   return (
     <DashboardLayout>
@@ -149,9 +167,13 @@ export default function UserProfile() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className='md:w-fit w-full'>
-            <TabsTrigger value="profile" className='w-full md:w-fit'>Profile</TabsTrigger>
-            <TabsTrigger className='w-full md:w-fit' value="password">Password</TabsTrigger>
+          <TabsList className="md:w-fit w-full">
+            <TabsTrigger value="profile" className="w-full md:w-fit">
+              Profile
+            </TabsTrigger>
+            <TabsTrigger className="w-full md:w-fit" value="password">
+              Password
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -165,7 +187,9 @@ export default function UserProfile() {
               <CardContent>
                 <form onSubmit={handleUpdateProfile} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="fullName" className="text-sm font-medium">Full Name</label>
+                    <label htmlFor="fullName" className="text-sm font-medium">
+                      Full Name
+                    </label>
                     <Input
                       id="fullName"
                       name="fullName"
@@ -173,19 +197,11 @@ export default function UserProfile() {
                       onChange={handleProfileChange}
                     />
                   </div>
-                  
-                  {/* <div className="space-y-2">
-                    <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      value={profileData.lastName}
-                      onChange={handleProfileChange}
-                    />
-                  </div> */}
-                  
+
                   <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium">Email</label>
+                    <label htmlFor="email" className="text-sm font-medium">
+                      Email
+                    </label>
                     <Input
                       id="email"
                       name="email"
@@ -217,14 +233,17 @@ export default function UserProfile() {
             <Card>
               <CardHeader>
                 <CardTitle>Change Password</CardTitle>
-                <CardDescription>
-                  Update your password
-                </CardDescription>
+                <CardDescription>Update your password</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="currentPassword" className="text-sm font-medium">Current Password</label>
+                    <label
+                      htmlFor="currentPassword"
+                      className="text-sm font-medium"
+                    >
+                      Current Password
+                    </label>
                     <Input
                       id="currentPassword"
                       name="currentPassword"
@@ -233,9 +252,14 @@ export default function UserProfile() {
                       onChange={handlePasswordChange}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <label htmlFor="newPassword" className="text-sm font-medium">New Password</label>
+                    <label
+                      htmlFor="newPassword"
+                      className="text-sm font-medium"
+                    >
+                      New Password
+                    </label>
                     <Input
                       id="newPassword"
                       name="newPassword"
@@ -244,9 +268,14 @@ export default function UserProfile() {
                       onChange={handlePasswordChange}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <label htmlFor="confirmNewPassword" className="text-sm font-medium">Confirm New Password</label>
+                    <label
+                      htmlFor="confirmNewPassword"
+                      className="text-sm font-medium"
+                    >
+                      Confirm New Password
+                    </label>
                     <Input
                       id="confirmNewPassword"
                       name="confirmNewPassword"
@@ -275,25 +304,25 @@ export default function UserProfile() {
           </TabsContent>
         </Tabs>
       </div>
-       <AlertDialog open={isLogOutOpen} onOpenChange={setIsLogOutOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to Logout?.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={handleLogout} 
-                    className="bg-red-500 hover:bg-red-600"
-                  >
-                  Logout
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+      <AlertDialog open={isLogOutOpen} onOpenChange={setIsLogOutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to Logout?.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

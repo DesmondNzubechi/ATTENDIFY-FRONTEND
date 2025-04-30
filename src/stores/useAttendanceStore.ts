@@ -20,6 +20,7 @@ export type AttendanceSession = {
   courseCode: string;
   level: string;
   sessionName: string;
+  sessionId: string;
   date: string;
   isActive: boolean;
   semester: string;
@@ -101,6 +102,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
               courseCode: attendance.course.courseCode,
               level: attendance.level,
               sessionName: attendance.acedemicSession.name,
+              sessionId: attendance.acedemicSession.id,
               date: attendance.createdAt,
               isActive: attendance.active,
               semester: attendance.semester,
