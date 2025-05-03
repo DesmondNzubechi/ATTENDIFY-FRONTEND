@@ -414,7 +414,7 @@ export const AttendanceTable = () => {
     );
 
     // If we already have 6 or more dates, return the first 6
-    if (sortedDates.length >= 6) {
+    if (sortedDates.length >= 10) {
       return sortedDates.slice(0, 6);
     }
 
