@@ -415,12 +415,12 @@ export const AttendanceTable = () => {
 
     // If we already have 6 or more dates, return the first 6
     if (sortedDates.length >= 10) {
-      return sortedDates.slice(0, 6);
+      return sortedDates.slice(0, 10);
     }
 
     // Fill in future dates to make up 6 columns
     const extraDates = [];
-    const countToAdd = 6 - sortedDates.length;
+    const countToAdd = 10 - sortedDates.length;
 
     let baseDate =
       sortedDates.length > 0
