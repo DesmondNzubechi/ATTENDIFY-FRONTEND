@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { useAttendanceStore } from "@/stores/useAttendanceStore";
 
 export const PublicSearchAndFilters = () => {

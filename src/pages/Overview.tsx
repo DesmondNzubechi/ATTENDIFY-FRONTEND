@@ -10,12 +10,13 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Users, UserPlus, BookOpen, GraduationCap, CalendarDays, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useStudentsStore } from '@/stores/useStudentsStore';
 import { useCoursesStore } from '@/stores/useCoursesStore';
 import { useLecturersStore } from '@/stores/useLecturersStore';
 import { useAttendanceStore } from '@/stores/useAttendanceStore';
 import { useAcademicSessionsStore } from '@/stores/useAcademicSessionsStore';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { addStudentData, studentsService } from '@/services/api/studentsService';
+import { useStudentsStore } from '@/stores/useStudentsStore';
 
 export default function Overview() {
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
@@ -30,6 +31,7 @@ export default function Overview() {
   const { lecturers, fetchAllLecturers } = useLecturersStore();
   const { sessions: attendanceSessions, fetchAttendance } = useAttendanceStore();
   const { sessions: academicSessions, fetchSessions } = useAcademicSessionsStore();
+  const {addStudent, setError} = useStudentsStore()
 
   // Fetch data on component mount
   useEffect(() => {
@@ -40,10 +42,52 @@ export default function Overview() {
     fetchSessions();
   }, [fetchStudents, fetchCourses, fetchAllLecturers, fetchAttendance, fetchSessions]);
 
-  const handleAddStudent = (newStudent) => {
-    setIsSuccessDialogOpen(true);
-  };
+  // const handleAddStudent = (newStudent) => {
+  //   setIsSuccessDialogOpen(true);
+  // }; 
 
+    const handleAddStudent = async (newStudent: addStudentData | any) => {
+      try {
+        const response = await studentsService.createStudent({
+          name: `${newStudent.firstName} ${newStudent.lastName}`,
+          email: newStudent.email,
+          regNo: newStudent.regNo,   
+          level: newStudent.level || '100', 
+          addmissionYear: newStudent.addmissionYear,
+          fingerPrint: newStudent.regNo
+        });
+        
+        // Add to store with the id from the response
+        if (response && response.data && response.data.data && response.data.data) {
+          const addedStudent = response.data.data;
+          addStudent({
+            id: addedStudent._id,
+            firstName: newStudent.firstName,
+            lastName: newStudent.lastName,
+            fullName: addedStudent.name,
+            email: newStudent.email,
+            registrationNumber: addedStudent.regNo.toString(),
+            course: newStudent.course,
+            level: addedStudent.level,
+            admissionYear: addedStudent.addmissionYear || new Date().getFullYear().toString(),
+            avatar: '/placeholder.svg'
+          });
+        } 
+        
+        toast({
+          title: "Student Added Successfully!",
+          description: "The student has been added to the system.",
+        });
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'Failed to add student');
+        toast({
+          title: "Error",
+          description: "Failed to add student. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }; 
+ 
   const handleDeleteStudent = (studentId: string) => {
     setSelectedStudentId(studentId);
     setIsDeleteDialogOpen(true);
