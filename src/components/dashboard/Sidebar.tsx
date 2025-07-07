@@ -37,7 +37,7 @@ const SidebarItem = ({
   const Content = () => (
     <>
       <Icon size={20} />
-      <span>{label}</span>``
+      <span>{label}</span>
     </>
   );
 
